@@ -4,7 +4,7 @@ import math
 import re
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread, QRegularExpression
+from PySide6.QtCore import QThread
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(mainWidget)
 
     def __run(self):
-        n = self.__timesLineEdit.text()
+        n = self.__timesLineEdit.text().replace(',', '')
 
         self.__t = Thread(['a.bat', n], self.__res_lst)
         self.__t.finished.connect(self.__t.deleteLater)
