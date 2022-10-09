@@ -4,7 +4,7 @@ import math
 import re
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QRegularExpression
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
@@ -33,9 +33,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Language Comparison')
 
         self.__timesLineEdit = QLineEdit()
-        self.__timesLineEdit.setText('10000000')
+        self.__timesLineEdit.setText(f'{10000000:,}')
+        self.__timesLineEdit.textEdited.connect(self.__textEdited)
+
         v = QRegularExpressionValidator()
-        v.setRegularExpression('[0-9]*')
+        v.setRegularExpression('^[1-9]\d{1,2}(,\d{3})*(\d+)?$')
         self.__timesLineEdit.setValidator(v)
         runTestBtn = QPushButton('Run Test')
         runTestBtn.clicked.connect(self.__run)
@@ -121,6 +123,11 @@ class MainWindow(QMainWindow):
         self.__t.finished.connect(self.__loadingLbl.hide)
         self.__t.finished.connect(self.__setChart)
         self.__t.start()
+
+    def __textEdited(self, text):
+        if text:
+            text = text.replace(',', '')
+            self.__timesLineEdit.setText(f'{int(text):,}')
 
     def __setChart(self):
         self.__tableWidget.clearContents()
