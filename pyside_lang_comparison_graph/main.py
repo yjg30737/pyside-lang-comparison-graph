@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
 
         topWidget = QWidget()
         topWidget.setLayout(lay)
+        topWidget.setFixedHeight(topWidget.sizeHint().height())
 
         self.__series = QBarSeries()
         barset = QBarSet('Time')
