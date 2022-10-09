@@ -1,8 +1,10 @@
 import subprocess
 import operator
-import math
+import psutil
+from psutil._common import bytes2human
 import re
 from num2words import num2words
+import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
 from PySide6.QtCore import QThread
@@ -94,17 +96,29 @@ class MainWindow(QMainWindow):
         self.__tableWidget.setHorizontalHeaderLabels(['Time'])
         self.__tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+        pcInfo = f'CPU: {platform.processor()}\n' \
+                 f'RAM: {bytes2human(psutil.virtual_memory().total)}'
         self.__pcInfo = QTextBrowser()
+        self.__pcInfo.setText(pcInfo)
 
+        lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__tableWidget)
+        lay.addWidget(QLabel('Device'))
         lay.addWidget(self.__pcInfo)
 
         leftWidget = QWidget()
         leftWidget.setLayout(lay)
 
+        lay = QVBoxLayout()
+        lay.addWidget(QLabel('Chart'))
+        lay.addWidget(self.__chartView)
+
+        rightWidget = QWidget()
+        rightWidget.setLayout(lay)
+
         bottomWidget = QSplitter()
         bottomWidget.addWidget(leftWidget)
-        bottomWidget.addWidget(self.__chartView)
+        bottomWidget.addWidget(rightWidget)
         bottomWidget.setChildrenCollapsible(False)
         bottomWidget.setHandleWidth(1)
         bottomWidget.setStyleSheet(
