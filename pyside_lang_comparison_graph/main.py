@@ -145,15 +145,18 @@ class MainWindow(QMainWindow):
         for f in fs:
             k, v = f
             lst.append([k, float(v)])
+
         lst = sorted(lst, key=operator.itemgetter(1))
         barSet = self.__series.barSets()[0]
         barSet.remove(0, 5)
         langs = [item[0] for item in lst]
+
         self.__axisX.clear()
         self.__axisX.append(langs)
+        self.__axisY.setRange(0, max([float(item[1]) for item in lst]))
+
         self.__tableWidget.setRowCount(len(langs))
         self.__tableWidget.setVerticalHeaderLabels(langs)
-        self.__axisY.setRange(0, max([math.ceil(float(item[1])) for item in lst]))
 
         for i in range(len(lst)):
             v = lst[i][1]
