@@ -1,15 +1,14 @@
-import copy
 import subprocess
 import operator
 import math
 import re
 
-
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
 from PySide6.QtCore import QThread
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
-    QVBoxLayout, QWidget, QApplication, QFileDialog
+    QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
+    QTableWidgetItem
 
 
 class Thread(QThread):
@@ -80,9 +79,33 @@ class MainWindow(QMainWindow):
         self.__loadingLbl.hide()
 
         lay = QVBoxLayout()
+
+        self.__tableWidget = QTableWidget()
+        self.__tableWidget.setColumnCount(1)
+        self.__tableWidget.setHorizontalHeaderLabels(['Time'])
+        self.__tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.__pcInfo = QTextBrowser()
+
+        lay.addWidget(self.__tableWidget)
+        lay.addWidget(self.__pcInfo)
+
+        leftWidget = QWidget()
+        leftWidget.setLayout(lay)
+
+        bottomWidget = QSplitter()
+        bottomWidget.addWidget(leftWidget)
+        bottomWidget.addWidget(self.__chartView)
+        bottomWidget.setChildrenCollapsible(False)
+        bottomWidget.setHandleWidth(1)
+        bottomWidget.setStyleSheet(
+            "QSplitterHandle {background-color: lightgray;}")
+        bottomWidget.setSizes([300, 700])
+
+        lay = QVBoxLayout()
         lay.addWidget(topWidget)
         lay.addWidget(self.__loadingLbl)
-        lay.addWidget(self.__chartView)
+        lay.addWidget(bottomWidget)
 
         mainWidget = QWidget()
         mainWidget.setLayout(lay)
@@ -100,6 +123,8 @@ class MainWindow(QMainWindow):
         self.__t.start()
 
     def __setChart(self):
+        self.__tableWidget.clearContents()
+
         fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', self.__res_lst[0])
         lst = []
         for f in fs:
@@ -110,9 +135,15 @@ class MainWindow(QMainWindow):
         barSet.remove(0, 5)
         self.__axisX.clear()
         self.__axisX.append([item[0] for item in lst])
+        self.__tableWidget.setRowCount(len([item[0] for item in lst]))
+        self.__tableWidget.setVerticalHeaderLabels([item[0] for item in lst])
         self.__axisY.setRange(0, max([math.ceil(float(item[1])) for item in lst]))
-        for item in lst:
-            barSet <<= float(item[1])
+
+        for i in range(len(lst)):
+            barSet <<= float(lst[i][1])
+            item = QTableWidgetItem(str(lst[i][1]))
+            item.setTextAlignment(Qt.AlignCenter)
+            self.__tableWidget.setItem(i, 0, item)
 
         self.__axisX.setTitleText('Language')
         self.__axisY.setTitleText('Seconds')
