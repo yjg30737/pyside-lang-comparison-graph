@@ -133,9 +133,9 @@ class MainWindow(QMainWindow):
 
     def __textEdited(self, text):
         if text:
-            text = text.replace(',', '')
-            self.__timesLineEdit.setText(f'{int(text):,}')
-            self.__timesNameLbl.setText(num2words(int(text)))
+            n = int(text.replace(',', ''))
+            self.__timesLineEdit.setText(f'{n:,}')
+            self.__timesNameLbl.setText(num2words(n))
 
     def __setChart(self):
         self.__tableWidget.clearContents()
@@ -148,15 +148,17 @@ class MainWindow(QMainWindow):
         lst = sorted(lst, key=operator.itemgetter(1))
         barSet = self.__series.barSets()[0]
         barSet.remove(0, 5)
+        langs = [item[0] for item in lst]
         self.__axisX.clear()
-        self.__axisX.append([item[0] for item in lst])
-        self.__tableWidget.setRowCount(len([item[0] for item in lst]))
-        self.__tableWidget.setVerticalHeaderLabels([item[0] for item in lst])
+        self.__axisX.append(langs)
+        self.__tableWidget.setRowCount(len(langs))
+        self.__tableWidget.setVerticalHeaderLabels(langs)
         self.__axisY.setRange(0, max([math.ceil(float(item[1])) for item in lst]))
 
         for i in range(len(lst)):
-            barSet <<= float(lst[i][1])
-            item = QTableWidgetItem(str(lst[i][1]))
+            v = lst[i][1]
+            barSet <<= float(v)
+            item = QTableWidgetItem(str(v))
             item.setTextAlignment(Qt.AlignCenter)
             self.__tableWidget.setItem(i, 0, item)
 
