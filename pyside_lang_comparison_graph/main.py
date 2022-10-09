@@ -73,6 +73,7 @@ class MainWindow(QMainWindow):
         self.__axisY = QValueAxis()
 
         self.__chart = QChart()
+        self.__chart.layout().setContentsMargins(0, 0, 0, 0)
         self.__chart.addSeries(self.__series)
 
         self.__chart.setAxisX(self.__axisX)
