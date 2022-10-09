@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         self.__series.append(QBarSet('Time'))
 
         self.__axisX = QBarCategoryAxis()
+
         self.__axisY = QValueAxis()
 
         self.__chart = QChart()
@@ -78,6 +79,9 @@ class MainWindow(QMainWindow):
         self.__axisY.setRange(0, max([math.ceil(float(item[1])) for item in lst]))
         for item in lst:
             barSet <<= float(item[1])
+
+        self.__axisX.setTitleText('Language')
+        self.__axisY.setTitleText('Seconds')
 
 
 if __name__ == "__main__":
