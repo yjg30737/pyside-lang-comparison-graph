@@ -11,7 +11,7 @@ from PySide6.QtCore import QThread
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
-    QTableWidgetItem
+    QTableWidgetItem, QAbstractItemView
 
 
 class Thread(QThread):
@@ -93,9 +93,11 @@ class MainWindow(QMainWindow):
         lay = QVBoxLayout()
 
         self.__tableWidget = QTableWidget()
+        self.__tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.__tableWidget.setColumnCount(1)
         self.__tableWidget.setHorizontalHeaderLabels(['Time'])
         self.__tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.__tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         pcInfo = f'CPU: {platform.processor()}\n' \
                  f'RAM: {bytes2human(psutil.virtual_memory().total)}'
