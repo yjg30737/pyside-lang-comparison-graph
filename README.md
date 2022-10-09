@@ -13,4 +13,4 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 
 ## Preview
 
-![image](https://user-images.githubusercontent.com/55078043/194742806-3d6da039-1f4e-4751-b120-3f1f0fcacc45.png)
+![image](https://user-images.githubusercontent.com/55078043/194747420-a854a69d-0f0a-410e-a88c-ac6ca97f1422.png)
