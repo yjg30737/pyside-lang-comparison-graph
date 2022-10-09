@@ -10,6 +10,7 @@ setup(
     description='Execute R, Go, Python, Rust, Julia performance test and show result with PySide graph to compare with each other',
     url='https://github.com/yjg30737/pyside-database-chart-example.git',
     install_requires=[
-        'PySide6'
+        'PySide6',
+        'num2words'
     ]
 )
