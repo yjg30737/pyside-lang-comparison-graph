@@ -1,20 +1,38 @@
+import copy
 import subprocess
 import operator
 import math
 import re
 
+
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtGui import QPainter, QRegularExpressionValidator
+from PySide6.QtCore import QThread
+from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
-    QVBoxLayout, QWidget, QApplication
+    QVBoxLayout, QWidget, QApplication, QProgressBar
+
+
+class Thread(QThread):
+    def __init__(self, arg, res_lst: list):
+        super().__init__()
+        self.__arg = arg
+        self.__res_lst = res_lst
+        self.__res_lst.clear()
+
+    def run(self):
+        p = subprocess.run(self.__arg, capture_output=True, text=True)
+        self.__res_lst.append(p.stdout)
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.__res_lst = []
         self.__initUi()
 
     def __initUi(self):
+        self.setWindowTitle('Language Comparison')
+
         self.__timesLineEdit = QLineEdit()
         self.__timesLineEdit.setText('10000000')
         v = QRegularExpressionValidator()
@@ -53,8 +71,13 @@ class MainWindow(QMainWindow):
         chartView.setRenderHints(QPainter.Antialiasing)
         chartView.setChart(self.__chart)
 
+        self.__loadingLbl = QLabel('Loading...')
+        self.__loadingLbl.setAlignment(Qt.AlignCenter)
+        self.__loadingLbl.hide()
+
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
+        lay.addWidget(self.__loadingLbl)
         lay.addWidget(chartView)
 
         mainWidget = QWidget()
@@ -64,9 +87,16 @@ class MainWindow(QMainWindow):
 
     def __run(self):
         n = self.__timesLineEdit.text()
-        p = subprocess.run(['a.bat', str(n)], capture_output=True, text=True)
 
-        fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', p.stdout)
+        self.__t = Thread(['a.bat', n], self.__res_lst)
+        self.__t.finished.connect(self.__t.deleteLater)
+        self.__t.started.connect(self.__loadingLbl.show)
+        self.__t.finished.connect(self.__loadingLbl.hide)
+        self.__t.finished.connect(self.__setChart)
+        self.__t.start()
+
+    def __setChart(self):
+        fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', self.__res_lst[0])
         lst = []
         for f in fs:
             k, v = f
