@@ -2,6 +2,7 @@ import subprocess
 import operator
 import math
 import re
+from num2words import num2words
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
 from PySide6.QtCore import QThread
@@ -32,9 +33,13 @@ class MainWindow(QMainWindow):
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
 
+        n_default = 10000000
+
         self.__timesLineEdit = QLineEdit()
-        self.__timesLineEdit.setText(f'{10000000:,}')
+        self.__timesLineEdit.setText(f'{n_default:,}')
         self.__timesLineEdit.textEdited.connect(self.__textEdited)
+
+        self.__timesNameLbl = QLabel(num2words(n_default))
 
         v = QRegularExpressionValidator()
         v.setRegularExpression('^[1-9]\d{1,2}(,\d{3})*(\d+)?$')
@@ -47,6 +52,7 @@ class MainWindow(QMainWindow):
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Times'))
         lay.addWidget(self.__timesLineEdit)
+        lay.addWidget(self.__timesNameLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(runTestBtn)
         lay.addWidget(saveBtn)
@@ -128,6 +134,7 @@ class MainWindow(QMainWindow):
         if text:
             text = text.replace(',', '')
             self.__timesLineEdit.setText(f'{int(text):,}')
+            self.__timesNameLbl.setText(num2words(int(text)))
 
     def __setChart(self):
         self.__tableWidget.clearContents()
