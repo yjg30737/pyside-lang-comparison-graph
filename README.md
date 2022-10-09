@@ -2,8 +2,9 @@
 Execute R, Go, Python, Rust, Julia performance test and show result with PySide graph to compare with each other
 
 ## Requirements
-* R, Go, Python, Rust, Julia for the test
-* PySide6 for graph GUI
+* R, Go, Python, Rust, Julia - for the test
+* PySide6 - for graph GUI
+* num2words - for show number as sstrin
 
 ## Usage
 * git clone ~
