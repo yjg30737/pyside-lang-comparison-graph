@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         lst = []
         for f in fs:
             k, v = f
-            lst.append([k, v])
+            lst.append([k, float(v)])
         lst = sorted(lst, key=operator.itemgetter(1))
         barSet = self.__series.barSets()[0]
         barSet.remove(0, 5)
