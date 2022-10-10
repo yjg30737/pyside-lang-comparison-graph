@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
         self.__series = QBarSeries()
         barset = QBarSet('Time')
         self.__series.append(barset)
+        self.__series.setLabelsVisible(True)
 
         self.__axisX = QBarCategoryAxis()
 
