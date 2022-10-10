@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QCheckBox, QVBoxLayout, QPushButton, QTableWidgetItem, \
-    QAbstractItemView
+    QAbstractItemView, QLabel
 
 import typing
 
@@ -126,7 +126,7 @@ class SettingsDialog(QDialog):
     def __initUi(self):
         tableWidget = CheckBoxTableWidget()
         tableWidget.setRowCount(len(self.__langs))
-        tableWidget.horizontalHeader().setHidden(True)
+        tableWidget.setHorizontalHeaderLabels(['Language', 'Installed'])
         tableWidget.verticalHeader().setHidden(True)
         tableWidget.setShowGrid(False)
         tableWidget.setSelectionMode(QAbstractItemView.NoSelection)
@@ -135,6 +135,13 @@ class SettingsDialog(QDialog):
             item = QTableWidgetItem(self.__langs[i])
             item.setTextAlignment(Qt.AlignCenter)
             tableWidget.setItem(i, 1, item)
+
+        lay = QVBoxLayout()
+        lay.addWidget(QLabel('Select Languages to Test'))
+        lay.addWidget(tableWidget)
+
+        topWidget = QWidget()
+        topWidget.setLayout(lay)
 
         self.__okBtn = QPushButton('OK')
         self.__okBtn.clicked.connect(self.accept)
@@ -151,7 +158,7 @@ class SettingsDialog(QDialog):
         bottomWidget.setLayout(lay)
 
         lay = QVBoxLayout()
-        lay.addWidget(tableWidget)
+        lay.addWidget(topWidget)
         lay.addWidget(bottomWidget)
 
         self.setLayout(lay)
