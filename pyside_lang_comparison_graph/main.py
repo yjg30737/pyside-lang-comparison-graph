@@ -11,7 +11,9 @@ from PySide6.QtCore import QThread
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
-    QTableWidgetItem, QAbstractItemView
+    QTableWidgetItem, QAbstractItemView, QGroupBox, QCheckBox, QDialog
+
+from pyside_lang_comparison_graph.settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
@@ -29,8 +31,11 @@ class Thread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.__res_lst = []
+        self.__initVal()
         self.__initUi()
+        
+    def __initVal(self):
+        self.__res_lst = []
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
@@ -47,8 +52,13 @@ class MainWindow(QMainWindow):
         v = QRegularExpressionValidator()
         v.setRegularExpression('^[1-9]\d{1,2}(,\d{3})*(\d+)?$')
         self.__timesLineEdit.setValidator(v)
+
+        settingsBtn = QPushButton('Settings')
+        settingsBtn.clicked.connect(self.__settings)
+
         runTestBtn = QPushButton('Run Test')
         runTestBtn.clicked.connect(self.__run)
+
         saveBtn = QPushButton('Save')
         saveBtn.clicked.connect(self.__save)
 
@@ -57,6 +67,7 @@ class MainWindow(QMainWindow):
         lay.addWidget(self.__timesLineEdit)
         lay.addWidget(self.__timesNameLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
+        lay.addWidget(settingsBtn)
         lay.addWidget(runTestBtn)
         lay.addWidget(saveBtn)
         lay.setContentsMargins(0, 0, 0, 0)
@@ -139,6 +150,12 @@ class MainWindow(QMainWindow):
         mainWidget.setLayout(lay)
 
         self.setCentralWidget(mainWidget)
+
+    def __settings(self):
+        dialog = SettingsDialog()
+        reply = dialog.exec()
+        if reply == QDialog.Accepted:
+            print('Yeah')
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
