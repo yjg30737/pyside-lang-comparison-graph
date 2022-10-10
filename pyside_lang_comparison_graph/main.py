@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
         self.__timesLineEdit.textEdited.connect(self.__textEdited)
 
         self.__timesNameLbl = QLabel(num2words(n_default))
+        self.__timesNameLbl.setMaximumWidth(300)
 
         v = QRegularExpressionValidator()
         v.setRegularExpression('^[1-9]\d{1,2}(,\d{3})*(\d+)?$')
@@ -152,7 +153,11 @@ class MainWindow(QMainWindow):
         if text:
             n = int(text.replace(',', ''))
             self.__timesLineEdit.setText(f'{n:,}')
-            self.__timesNameLbl.setText(num2words(n))
+            n_text = num2words(n)
+            self.__timesNameLbl.setText(n_text)
+            if self.__timesNameLbl.fontMetrics().boundingRect(n_text).width() > self.__timesNameLbl.maximumWidth():
+                reduced_n_text = n-(n % pow(10, len(str(n))-2))
+                self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
     def __setChart(self):
         self.__tableWidget.clearContents()
