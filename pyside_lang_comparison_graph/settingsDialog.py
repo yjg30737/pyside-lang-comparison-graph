@@ -1,3 +1,5 @@
+import shutil
+
 from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QCheckBox, QVBoxLayout, QPushButton, QTableWidgetItem, \
     QAbstractItemView, QLabel
 
@@ -121,24 +123,36 @@ class SettingsDialog(QDialog):
         self.__initUi()
 
     def __initVal(self):
-        self.__langs = ['Python', 'R', 'Go', 'Rust', 'Julia']
+        self.__langs = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
 
     def __initUi(self):
-        tableWidget = CheckBoxTableWidget()
-        tableWidget.setRowCount(len(self.__langs))
-        tableWidget.setHorizontalHeaderLabels(['Language', 'Installed'])
-        tableWidget.verticalHeader().setHidden(True)
-        tableWidget.setShowGrid(False)
-        tableWidget.setSelectionMode(QAbstractItemView.NoSelection)
-        tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.__langTableWidget = CheckBoxTableWidget()
+        self.__langTableWidget.setRowCount(len(self.__langs))
+        self.__langTableWidget.setColumnCount(3)
+        self.__langTableWidget.setHorizontalHeaderLabels(['Language', 'Installed'])
+        self.__langTableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.__langTableWidget.stretchEveryColumnExceptForCheckBox()
+        self.__langTableWidget.verticalHeader().setHidden(True)
+        self.__langTableWidget.setShowGrid(False)
+        self.__langTableWidget.setSelectionMode(QAbstractItemView.NoSelection)
+        self.__langTableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         for i in range(len(self.__langs)):
-            item = QTableWidgetItem(self.__langs[i])
-            item.setTextAlignment(Qt.AlignCenter)
-            tableWidget.setItem(i, 1, item)
+            langItem = QTableWidgetItem(list(self.__langs.keys())[i])
+            langItem.setTextAlignment(Qt.AlignCenter)
+            self.__langTableWidget.setItem(i, 1, langItem)
+            btn = QPushButton()
+            if shutil.which(list(self.__langs.values())[i]) != '':
+                btn.setText('Installed')
+                # todo make it enable to version check of each langs and update
+                btn.setDisabled(True)
+                self.__langTableWidget.cellWidget(i, 0).layout().itemAt(0).widget().setChecked(True)
+            else:
+                btn.setText('Install')
+            self.__langTableWidget.setCellWidget(i, 2, btn)
 
         lay = QVBoxLayout()
         lay.addWidget(QLabel('Select Languages to Test'))
-        lay.addWidget(tableWidget)
+        lay.addWidget(self.__langTableWidget)
 
         topWidget = QWidget()
         topWidget.setLayout(lay)
