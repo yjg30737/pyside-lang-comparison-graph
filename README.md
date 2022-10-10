@@ -4,7 +4,7 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 ## Requirements
 * R, Go, Python, Rust, Julia - for the test
 * PySide6 - for graph GUI
-* num2words - for show number as sstrin
+* num2words - for show number as string name
 
 ## Usage
 * git clone ~
