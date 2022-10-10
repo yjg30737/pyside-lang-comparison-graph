@@ -12,6 +12,10 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 * Write the times you want to calculate
 * See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
 
+## To do
+* Settings
+* Give chart more detail
+
 ## Preview
 
-![image](https://user-images.githubusercontent.com/55078043/194784387-0ece5622-4fae-402e-b1e5-7459b69ffb59.png)
+![image](https://user-images.githubusercontent.com/55078043/194853301-83c1e399-aa4d-463e-83e2-8b8bcc5c0483.png)
