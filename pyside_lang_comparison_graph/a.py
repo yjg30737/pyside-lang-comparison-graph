@@ -14,4 +14,4 @@ second = np.random.rand(n)
 
 rst = np.multiply(first, second)
 
-print("Python: %s seconds" % (time.time() - start_time))
+print("Python: %.6f seconds" % (time.time() - start_time))
