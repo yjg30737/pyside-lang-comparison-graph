@@ -130,6 +130,7 @@ class SettingsDialog(QDialog):
         self.__langs = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
 
     def __initUi(self):
+        self.setWindowTitle('Settings')
         self.__langTableWidget = CheckBoxTableWidget()
         self.__langTableWidget.setRowCount(len(self.__langs))
         self.__langTableWidget.setColumnCount(3)
