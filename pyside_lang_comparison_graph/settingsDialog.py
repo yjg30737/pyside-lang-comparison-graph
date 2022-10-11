@@ -32,6 +32,10 @@ class CheckBox(QWidget):
     def __sendCheckedSignal(self, flag):
         self.checkedSignal.emit(self.__r_idx, flag)
 
+    def isChecked(self):
+        f = self.layout().itemAt(0).widget().isChecked()
+        return Qt.Checked if f else Qt.Unchecked
+
 
 class CheckBoxTableWidget(QTableWidget):
     checkedSignal = Signal(int, Qt.CheckState)
@@ -94,11 +98,11 @@ class CheckBoxTableWidget(QTableWidget):
     def getUncheckedRows(self):
         return self.__getCheckedStateOfRows(Qt.Unchecked)
 
-    def __getCheckedStateOfRows(self, flag: Qt.CheckState):
+    def __getCheckedStateOfRows(self, flag: Qt.Checked):
         flag_lst = []
         for i in range(self.rowCount()):
             item = super().cellWidget(i, 0)
-            if item.checkState() == flag:
+            if item.isChecked() == flag:
                 flag_lst.append(i)
 
         return flag_lst
@@ -176,3 +180,6 @@ class SettingsDialog(QDialog):
         lay.addWidget(bottomWidget)
 
         self.setLayout(lay)
+
+    def getLangsToTest(self):
+        return [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]

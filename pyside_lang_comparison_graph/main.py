@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         self.__initUi()
         
     def __initVal(self):
+        self.__langsToTest = []
         self.__res_lst = []
         self.__tDeleted = False
         # Thread for running test
@@ -159,7 +160,8 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog()
         reply = dialog.exec()
         if reply == QDialog.Accepted:
-            print('Yeah')
+            self.__langsToTest = dialog.getLangsToTest()
+            print(self.__langsToTest)
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
