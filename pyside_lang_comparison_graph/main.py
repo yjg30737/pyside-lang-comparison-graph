@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.__timesNameLbl.setMaximumWidth(300)
 
         v = QRegularExpressionValidator()
-        v.setRegularExpression('^[1-9]\d{1,2}(,\d{3})*(\d+)?$')
+        v.setRegularExpression('^\d{1,3}(,\d{3})*(\d+)?$')
         self.__timesLineEdit.setValidator(v)
 
         settingsBtn = QPushButton('Settings')
