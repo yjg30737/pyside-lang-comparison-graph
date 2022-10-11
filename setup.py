@@ -11,6 +11,7 @@ setup(
     url='https://github.com/yjg30737/pyside-database-chart-example.git',
     install_requires=[
         'PySide6',
+        'psutil',
         'num2words'
     ]
 )
