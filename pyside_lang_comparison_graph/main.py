@@ -104,6 +104,7 @@ class MainWindow(QMainWindow):
 
         self.__loadingLbl = QLabel('Loading...')
         self.__loadingLbl.setAlignment(Qt.AlignCenter)
+        self.__loadingLbl.setMaximumHeight(self.__loadingLbl.sizeHint().height())
         self.__loadingLbl.hide()
 
         lay = QVBoxLayout()
