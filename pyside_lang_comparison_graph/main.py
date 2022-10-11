@@ -7,11 +7,11 @@ from num2words import num2words
 import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QDeadlineTimer
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
-    QTableWidgetItem, QAbstractItemView, QDialog
+    QTableWidgetItem, QAbstractItemView, QDialog, QMessageBox
 
 from settingsDialog import SettingsDialog
 
@@ -36,6 +36,9 @@ class MainWindow(QMainWindow):
         
     def __initVal(self):
         self.__res_lst = []
+        self.__tDeleted = False
+        # Thread for running test
+        self.__t = ''
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
@@ -163,12 +166,17 @@ class MainWindow(QMainWindow):
         # disable the button when running to prevent error
         self.__runTestBtn.setEnabled(False)
 
+        self.__tDeleted = False
         self.__t = Thread(['a.bat', n], self.__res_lst)
-        self.__t.finished.connect(self.__t.deleteLater)
+        self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
         self.__t.finished.connect(self.__setChart)
         self.__t.start()
+
+    def __setThreadDeletedFlagForPreventingRuntimeError(self):
+        self.__tDeleted = True
+        self.__t.deleteLater()
 
     def __textEdited(self, text):
         if text:
@@ -247,6 +255,17 @@ class MainWindow(QMainWindow):
 
             path = filename.replace('/', '\\')
             subprocess.Popen(r'explorer /select,"' + path + '"')
+
+    def closeEvent(self, e):
+        if isinstance(self.__t, QThread):
+            if self.__tDeleted:
+                e.accept()
+            else:
+                QMessageBox.critical(self, 'Warning',
+                                           'You can\'t close while running test.')
+                e.ignore()
+        else:
+            e.accept()
 
 
 if __name__ == "__main__":
