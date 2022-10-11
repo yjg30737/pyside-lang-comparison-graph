@@ -1,6 +1,6 @@
 import shutil
 
-from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QCheckBox, QVBoxLayout, QPushButton, QTableWidgetItem, \
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QCheckBox, QVBoxLayout, QPushButton, QTableWidgetItem, \
     QAbstractItemView, QLabel
 
 import typing

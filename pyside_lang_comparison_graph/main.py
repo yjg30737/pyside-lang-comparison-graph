@@ -11,7 +11,7 @@ from PySide6.QtCore import QThread
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
-    QTableWidgetItem, QAbstractItemView, QGroupBox, QCheckBox, QDialog
+    QTableWidgetItem, QAbstractItemView, QDialog
 
 from pyside_lang_comparison_graph.settingsDialog import SettingsDialog
 
