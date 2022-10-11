@@ -4,10 +4,12 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 ## Requirements
 * R, Go, Python, Rust, Julia - for the test
 * PySide6 - for graph GUI
+* psutil - for show virtual memory data of your pc
 * num2words - for show number as string name
 
 ## Usage
 * git clone ~
+* python -m pip install psutil num2words
 * python main.py
 * Write the times you want to calculate
 * See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
