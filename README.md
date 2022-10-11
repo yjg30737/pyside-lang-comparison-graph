@@ -1,5 +1,9 @@
 # pyside-lang-comparison-graph
-Execute R, Go, Python, Rust, Julia performance test and show result with PySide graph to compare with each other
+Execute R, Go, Python, Rust, Julia performance test and show result with PySide graph(chart) to compare with each other
+
+You can save it as png, jpg, pdf file.
+
+See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
 
 ## Requirements
 * R, Go, Python, Rust, Julia - for the test
@@ -8,15 +12,17 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 * num2words - for show number as string name
 
 ## Usage
+### First
+#### If you want to clone
 * git clone ~
 * python -m pip install psutil num2words
+#### If you want to install this with pip
+* python -m pip install git+https://github.com/yjg30737/pyside-lang-comparison-graph.git --upgrade
+### Second
 * python main.py
 * Write the times you want to calculate
-* See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
-
-## To do
-* Settings
-* Give chart more detail
+* Press "Run Test" and wait patiently till chart shows the result of test
+* If you want to save the result, press save
 
 ## Preview
 
