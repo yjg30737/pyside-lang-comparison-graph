@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpac
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
     QTableWidgetItem, QAbstractItemView, QDialog
 
-from pyside_lang_comparison_graph.settingsDialog import SettingsDialog
+from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
@@ -56,8 +56,8 @@ class MainWindow(QMainWindow):
         settingsBtn = QPushButton('Settings')
         settingsBtn.clicked.connect(self.__settings)
 
-        runTestBtn = QPushButton('Run Test')
-        runTestBtn.clicked.connect(self.__run)
+        self.__runTestBtn = QPushButton('Run Test')
+        self.__runTestBtn.clicked.connect(self.__run)
 
         saveBtn = QPushButton('Save')
         saveBtn.clicked.connect(self.__save)
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         lay.addWidget(self.__timesNameLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(settingsBtn)
-        lay.addWidget(runTestBtn)
+        lay.addWidget(self.__runTestBtn)
         lay.addWidget(saveBtn)
         lay.setContentsMargins(0, 0, 0, 0)
 
@@ -160,6 +160,9 @@ class MainWindow(QMainWindow):
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
+        # disable the button when running to prevent error
+        self.__runTestBtn.setEnabled(False)
+
         self.__t = Thread(['a.bat', n], self.__res_lst)
         self.__t.finished.connect(self.__t.deleteLater)
         self.__t.started.connect(self.__loadingLbl.show)
@@ -178,6 +181,9 @@ class MainWindow(QMainWindow):
                 self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
     def __setChart(self):
+        # enable the button which was disabled when running
+        self.__runTestBtn.setEnabled(True)
+
         self.__tableWidget.clearContents()
 
         fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', self.__res_lst[0])
