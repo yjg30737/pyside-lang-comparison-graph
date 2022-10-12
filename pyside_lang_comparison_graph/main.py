@@ -7,7 +7,7 @@ from num2words import num2words
 import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QSettings
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
@@ -17,27 +17,27 @@ from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
-    def __init__(self, n, langs_to_test: list, res_lst: list):
+    def __init__(self, n, langs_test_available_lst: list, res_lst: list):
         super().__init__()
         self.__n = n
-        self.__langs_to_test = langs_to_test
+        self.__langs_test_available_lst = langs_test_available_lst
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
     def run(self):
-        if 'R' in self.__langs_to_test:
+        if 'R' in self.__langs_test_available_lst:
             p = subprocess.run(['Rscript', 'a.R', self.__n], capture_output=True, text=True)
             self.__res_lst.append(p.stdout)
-        if 'Go' in self.__langs_to_test:
+        if 'Go' in self.__langs_test_available_lst:
             p = subprocess.run(['go', 'run', 'a.go', self.__n], capture_output=True, text=True)
             self.__res_lst.append(p.stdout)
-        if 'Python' in self.__langs_to_test:
+        if 'Python' in self.__langs_test_available_lst:
             p = subprocess.run(['python', 'a.py', self.__n], capture_output=True, text=True)
             self.__res_lst.append(p.stdout)
-        if 'Rust' in self.__langs_to_test:
+        if 'Rust' in self.__langs_test_available_lst:
             p = subprocess.run(['cargo', 'run', '--release', '--', self.__n], capture_output=True, text=True)
             self.__res_lst.append(p.stdout)
-        if 'Julia' in self.__langs_to_test:
+        if 'Julia' in self.__langs_test_available_lst:
             p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
             self.__res_lst.append(p.stdout)
 
@@ -46,14 +46,22 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.__initVal()
+        self.__initSettings()
         self.__initUi()
         
     def __initVal(self):
-        self.__langs_to_test = ['Python', 'R', 'Go', 'Rust', 'Julia']
+        self.__langs_test_available_lst = []
         self.__res_lst = []
         self.__t_deleted = False
         # Thread for running test
         self.__t = ''
+
+    def __initSettings(self):
+        self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
+        for k in self.__settingsStruct.allKeys():
+            v = self.__settingsStruct.value(k, 1)
+            self.__langs_test_available_lst.append((k, v))
+        print(self.__langs_test_available_lst)
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
@@ -174,7 +182,7 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog()
         reply = dialog.exec()
         if reply == QDialog.Accepted:
-            self.__langs_to_test = dialog.getLangsToTest()
+            self.__langs_test_available_lst = dialog.getLangsToTest()
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
@@ -183,7 +191,7 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(False)
         
         self.__t_deleted = False
-        self.__t = Thread(n, self.__langs_to_test, self.__res_lst)
+        self.__t = Thread(n, self.__langs_test_available_lst, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
