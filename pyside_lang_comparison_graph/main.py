@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.__initUi()
         
     def __initVal(self):
-        self.__langs_to_test = []
+        self.__langs_to_test = ['Python', 'R', 'Go', 'Rust', 'Julia']
         self.__res_lst = []
         self.__t_deleted = False
         # Thread for running test
