@@ -34,7 +34,6 @@ class Thread(QThread):
         self.__res_lst.append(p.stdout)
         p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
         self.__res_lst.append(p.stdout)
-        print(self.__res_lst)
 
 
 class MainWindow(QMainWindow):
