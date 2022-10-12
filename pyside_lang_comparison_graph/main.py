@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
 
         lst = sorted(lst, key=operator.itemgetter(1))
         barSet = self.__series.barSets()[0]
-        barSet.remove(0, 5)
+        barSet.remove(0, barSet.count())
         langs = [item[0] for item in lst]
 
         self.__axisX.clear()
