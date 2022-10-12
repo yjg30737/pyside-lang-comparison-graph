@@ -21,25 +21,22 @@ class Thread(QThread):
         super().__init__()
         self.__n = n
         self.__langs_test_available_lst = langs_test_available_lst
+        self.__command_dict = {
+            'Python': ['python', 'a.py'],
+            'R': ['Rscript', 'a.R'],
+            'Go': ['go', 'run', 'a.go'],
+            'Rust': ['cargo', 'run', '--release', '--'],
+            'Julia': ['julia', 'a.jl']
+        }
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
     def run(self):
-        if 'R' in self.__langs_test_available_lst:
-            p = subprocess.run(['Rscript', 'a.R', self.__n], capture_output=True, text=True)
-            self.__res_lst.append(p.stdout)
-        if 'Go' in self.__langs_test_available_lst:
-            p = subprocess.run(['go', 'run', 'a.go', self.__n], capture_output=True, text=True)
-            self.__res_lst.append(p.stdout)
-        if 'Python' in self.__langs_test_available_lst:
-            p = subprocess.run(['python', 'a.py', self.__n], capture_output=True, text=True)
-            self.__res_lst.append(p.stdout)
-        if 'Rust' in self.__langs_test_available_lst:
-            p = subprocess.run(['cargo', 'run', '--release', '--', self.__n], capture_output=True, text=True)
-            self.__res_lst.append(p.stdout)
-        if 'Julia' in self.__langs_test_available_lst:
-            p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
-            self.__res_lst.append(p.stdout)
+        for lang_t in self.__langs_test_available_lst:
+            lang, lang_to_test_f = lang_t
+            if lang_to_test_f:
+                p = subprocess.run(self.__command_dict[lang] + [self.__n], capture_output=True, text=True)
+                self.__res_lst.append(p.stdout)
 
 
 class MainWindow(QMainWindow):
@@ -61,7 +58,6 @@ class MainWindow(QMainWindow):
         for k in self.__settingsStruct.allKeys():
             v = self.__settingsStruct.value(k, 1)
             self.__langs_test_available_lst.append((k, v))
-        print(self.__langs_test_available_lst)
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
