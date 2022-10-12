@@ -74,23 +74,23 @@ class MainWindow(QMainWindow):
         v.setRegularExpression('^\d{1,3}(,\d{3})*(\d+)?$')
         self.__timesLineEdit.setValidator(v)
 
-        settingsBtn = QPushButton('Settings')
-        settingsBtn.clicked.connect(self.__settings)
+        self.__settingsBtn = QPushButton('Settings')
+        self.__settingsBtn.clicked.connect(self.__settings)
 
         self.__runTestBtn = QPushButton('Run Test')
         self.__runTestBtn.clicked.connect(self.__run)
 
-        saveBtn = QPushButton('Save')
-        saveBtn.clicked.connect(self.__save)
+        self.__saveBtn = QPushButton('Save')
+        self.__saveBtn.clicked.connect(self.__save)
 
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Times'))
         lay.addWidget(self.__timesLineEdit)
         lay.addWidget(self.__timesNameLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
-        lay.addWidget(settingsBtn)
+        lay.addWidget(self.__settingsBtn)
         lay.addWidget(self.__runTestBtn)
-        lay.addWidget(saveBtn)
+        lay.addWidget(self.__saveBtn)
         lay.setContentsMargins(0, 0, 0, 0)
 
         topWidget = QWidget()
@@ -182,16 +182,25 @@ class MainWindow(QMainWindow):
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
-        # disable the button when running to prevent error
+        # disable the button when running in order to prevent error
         self.__runTestBtn.setEnabled(False)
+        self.__settingsBtn.setEnabled(False)
+        self.__saveBtn.setEnabled(False)
         
         self.__t_deleted = False
         self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
+        self.__t.finished.connect(self.__handleButton)
         self.__t.finished.connect(self.__setChart)
         self.__t.start()
+
+    # enable the button after test is over
+    def __handleButton(self):
+        self.__runTestBtn.setEnabled(True)
+        self.__settingsBtn.setEnabled(True)
+        self.__saveBtn.setEnabled(True)
 
     def __setThreadDeletedFlagForPreventingRuntimeError(self):
         self.__t_deleted = True
@@ -208,9 +217,6 @@ class MainWindow(QMainWindow):
                 self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
     def __setChart(self):
-        # enable the button which was disabled when running
-        self.__runTestBtn.setEnabled(True)
-
         self.__tableWidget.clearContents()
         lst = []
         for res in self.__res_lst:
