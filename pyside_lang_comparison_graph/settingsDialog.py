@@ -194,12 +194,19 @@ class SettingsDialog(QDialog):
 
         self.setLayout(lay)
 
-    def getLangsToTest(self):
+    def accept(self) -> None:
+        super().accept()
+        self.__setLangsDict()
+        dict = self.getLangsDict()
+        for k, v in dict.items():
+            self.__settingsStruct.setValue(k, v)
+
+    def __setLangsDict(self):
         checked_langs_lst = [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]
-        all_lang_name_flag_lst = []
-        for k in self.__langs_app_dict.keys():
+        for k in self.__langs_test_available_dict.keys():
             if k in checked_langs_lst:
-                all_lang_name_flag_lst.append((k, 1))
+                self.__langs_test_available_dict[k] = 1
             else:
-                all_lang_name_flag_lst.append((k, 0))
-        return all_lang_name_flag_lst
+                self.__langs_test_available_dict[k] = 0
+    def getLangsDict(self):
+        return self.__langs_test_available_dict

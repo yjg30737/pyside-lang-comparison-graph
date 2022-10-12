@@ -17,10 +17,10 @@ from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
-    def __init__(self, n, langs_test_available_lst: list, res_lst: list):
+    def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
         self.__n = n
-        self.__langs_test_available_lst = langs_test_available_lst
+        self.__langs_test_available_dict = langs_test_available_dict
         self.__command_dict = {
             'Python': ['python', 'a.py'],
             'R': ['Rscript', 'a.R'],
@@ -32,10 +32,9 @@ class Thread(QThread):
         self.__res_lst.clear()
 
     def run(self):
-        for lang_t in self.__langs_test_available_lst:
-            lang, lang_to_test_f = lang_t
-            if lang_to_test_f:
-                p = subprocess.run(self.__command_dict[lang] + [self.__n], capture_output=True, text=True)
+        for k, v in self.__langs_test_available_dict.items():
+            if v:
+                p = subprocess.run(self.__command_dict[k] + [self.__n], capture_output=True, text=True)
                 self.__res_lst.append(p.stdout)
 
 
@@ -47,7 +46,7 @@ class MainWindow(QMainWindow):
         self.__initUi()
         
     def __initVal(self):
-        self.__langs_test_available_lst = []
+        self.__langs_test_available_dict = {}
         self.__res_lst = []
         self.__t_deleted = False
         # Thread for running test
@@ -57,7 +56,7 @@ class MainWindow(QMainWindow):
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
-            self.__langs_test_available_lst.append((k, v))
+            self.__langs_test_available_dict[k] = v
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
@@ -178,10 +177,7 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog()
         reply = dialog.exec()
         if reply == QDialog.Accepted:
-            self.__langs_test_available_lst = dialog.getLangsToTest()
-            for lang_t in self.__langs_test_available_lst:
-                lang_name, lang_f = lang_t
-                self.__settingsStruct.setValue(lang_name, lang_f)
+            self.__langs_test_available_dict = dialog.getLangsDict()
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
@@ -190,7 +186,7 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(False)
         
         self.__t_deleted = False
-        self.__t = Thread(n, self.__langs_test_available_lst, self.__res_lst)
+        self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
