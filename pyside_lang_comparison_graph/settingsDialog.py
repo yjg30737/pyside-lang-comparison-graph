@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QHBoxLayout, QCheckBox, QVBoxLayout, QPus
 import typing
 
 from PySide6.QtWidgets import QHeaderView, QTableWidget, QWidget, QGridLayout
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QSettings
 
 
 class CheckBox(QWidget):
@@ -124,15 +124,23 @@ class SettingsDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.__initVal()
+        self.__initSettings()
         self.__initUi()
 
     def __initVal(self):
-        self.__langs = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
+        self.__langs_test_available_dict = {}
+        self.__langs_app_dict = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
+
+    def __initSettings(self):
+        self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
+        for k in self.__settingsStruct.allKeys():
+            v = int(self.__settingsStruct.value(k, 1))
+            self.__langs_test_available_dict[k] = v
 
     def __initUi(self):
         self.setWindowTitle('Settings')
         self.__langTableWidget = CheckBoxTableWidget()
-        self.__langTableWidget.setRowCount(len(self.__langs))
+        self.__langTableWidget.setRowCount(len(self.__langs_app_dict))
         self.__langTableWidget.setColumnCount(3)
         self.__langTableWidget.setHorizontalHeaderLabels(['Language', 'Installed'])
         self.__langTableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -141,16 +149,20 @@ class SettingsDialog(QDialog):
         self.__langTableWidget.setShowGrid(False)
         self.__langTableWidget.setSelectionMode(QAbstractItemView.NoSelection)
         self.__langTableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        for i in range(len(self.__langs)):
-            langItem = QTableWidgetItem(list(self.__langs.keys())[i])
+
+        for i in range(len(self.__langs_app_dict)):
+            langName = list(self.__langs_app_dict.keys())[i]
+            langItem = QTableWidgetItem(langName)
             langItem.setTextAlignment(Qt.AlignCenter)
             self.__langTableWidget.setItem(i, 1, langItem)
             btn = QPushButton()
-            if shutil.which(list(self.__langs.values())[i]) != '':
+            langAppName = list(self.__langs_app_dict.values())[i]
+            if shutil.which(langAppName) != '':
                 btn.setText('Installed')
                 # todo make it enable to version check of each langs and update
                 btn.setDisabled(True)
-                self.__langTableWidget.cellWidget(i, 0).layout().itemAt(0).widget().setChecked(True)
+                if self.__langs_test_available_dict[langName]:
+                    self.__langTableWidget.cellWidget(i, 0).layout().itemAt(0).widget().setChecked(True)
             else:
                 btn.setText('Install')
             self.__langTableWidget.setCellWidget(i, 2, btn)
@@ -183,4 +195,11 @@ class SettingsDialog(QDialog):
         self.setLayout(lay)
 
     def getLangsToTest(self):
-        return [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]
+        checked_langs_lst = [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]
+        all_lang_name_flag_lst = []
+        for k in self.__langs_app_dict.keys():
+            if k in checked_langs_lst:
+                all_lang_name_flag_lst.append((k, 1))
+            else:
+                all_lang_name_flag_lst.append((k, 0))
+        return all_lang_name_flag_lst

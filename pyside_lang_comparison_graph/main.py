@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
     def __initSettings(self):
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
         for k in self.__settingsStruct.allKeys():
-            v = self.__settingsStruct.value(k, 1)
+            v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_lst.append((k, v))
 
     def __initUi(self):
@@ -179,6 +179,9 @@ class MainWindow(QMainWindow):
         reply = dialog.exec()
         if reply == QDialog.Accepted:
             self.__langs_test_available_lst = dialog.getLangsToTest()
+            for lang_t in self.__langs_test_available_lst:
+                lang_name, lang_f = lang_t
+                self.__settingsStruct.setValue(lang_name, lang_f)
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
