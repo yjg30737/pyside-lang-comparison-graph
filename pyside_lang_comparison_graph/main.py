@@ -17,15 +17,24 @@ from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
-    def __init__(self, arg, res_lst: list):
+    def __init__(self, n, res_lst: list):
         super().__init__()
-        self.__arg = arg
+        self.__n = n
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
     def run(self):
-        p = subprocess.run(self.__arg, capture_output=True, text=True)
+        p = subprocess.run(['Rscript', 'a.R', self.__n], capture_output=True, text=True)
         self.__res_lst.append(p.stdout)
+        p = subprocess.run(['go', 'run', 'a.go', self.__n], capture_output=True, text=True)
+        self.__res_lst.append(p.stdout)
+        p = subprocess.run(['python', 'a.py', self.__n], capture_output=True, text=True)
+        self.__res_lst.append(p.stdout)
+        p = subprocess.run(['cargo', 'run', '--release', '--', self.__n], capture_output=True, text=True)
+        self.__res_lst.append(p.stdout)
+        p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
+        self.__res_lst.append(p.stdout)
+        print(self.__res_lst)
 
 
 class MainWindow(QMainWindow):
@@ -170,7 +179,7 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(False)
 
         self.__tDeleted = False
-        self.__t = Thread(['a.bat', n], self.__res_lst)
+        self.__t = Thread(n, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
@@ -196,12 +205,12 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(True)
 
         self.__tableWidget.clearContents()
-
-        fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', self.__res_lst[0])
         lst = []
-        for f in fs:
-            k, v = f
-            lst.append([k, float(v)])
+        for res in self.__res_lst:
+            fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', res)
+            for f in fs:
+                k, v = f
+                lst.append([k, float(v)])
 
         lst = sorted(lst, key=operator.itemgetter(1))
         barSet = self.__series.barSets()[0]
