@@ -17,23 +17,29 @@ from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
-    def __init__(self, n, res_lst: list):
+    def __init__(self, n, langs_to_test: list, res_lst: list):
         super().__init__()
         self.__n = n
+        self.__langs_to_test = langs_to_test
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
     def run(self):
-        p = subprocess.run(['Rscript', 'a.R', self.__n], capture_output=True, text=True)
-        self.__res_lst.append(p.stdout)
-        p = subprocess.run(['go', 'run', 'a.go', self.__n], capture_output=True, text=True)
-        self.__res_lst.append(p.stdout)
-        p = subprocess.run(['python', 'a.py', self.__n], capture_output=True, text=True)
-        self.__res_lst.append(p.stdout)
-        p = subprocess.run(['cargo', 'run', '--release', '--', self.__n], capture_output=True, text=True)
-        self.__res_lst.append(p.stdout)
-        p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
-        self.__res_lst.append(p.stdout)
+        if 'R' in self.__langs_to_test:
+            p = subprocess.run(['Rscript', 'a.R', self.__n], capture_output=True, text=True)
+            self.__res_lst.append(p.stdout)
+        if 'Go' in self.__langs_to_test:
+            p = subprocess.run(['go', 'run', 'a.go', self.__n], capture_output=True, text=True)
+            self.__res_lst.append(p.stdout)
+        if 'Python' in self.__langs_to_test:
+            p = subprocess.run(['python', 'a.py', self.__n], capture_output=True, text=True)
+            self.__res_lst.append(p.stdout)
+        if 'Rust' in self.__langs_to_test:
+            p = subprocess.run(['cargo', 'run', '--release', '--', self.__n], capture_output=True, text=True)
+            self.__res_lst.append(p.stdout)
+        if 'Julia' in self.__langs_to_test:
+            p = subprocess.run(['julia', 'a.jl', self.__n], capture_output=True, text=True)
+            self.__res_lst.append(p.stdout)
 
 
 class MainWindow(QMainWindow):
@@ -169,7 +175,6 @@ class MainWindow(QMainWindow):
         reply = dialog.exec()
         if reply == QDialog.Accepted:
             self.__langs_to_test = dialog.getLangsToTest()
-            print(self.__langs_to_test)
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
@@ -178,7 +183,7 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(False)
         
         self.__t_deleted = False
-        self.__t = Thread(n, self.__res_lst)
+        self.__t = Thread(n, self.__langs_to_test, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
         self.__t.finished.connect(self.__loadingLbl.hide)
