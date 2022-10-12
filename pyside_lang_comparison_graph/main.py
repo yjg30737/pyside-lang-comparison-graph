@@ -43,9 +43,9 @@ class MainWindow(QMainWindow):
         self.__initUi()
         
     def __initVal(self):
-        self.__langsToTest = []
+        self.__langs_to_test = []
         self.__res_lst = []
-        self.__tDeleted = False
+        self.__t_deleted = False
         # Thread for running test
         self.__t = ''
 
@@ -168,16 +168,16 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog()
         reply = dialog.exec()
         if reply == QDialog.Accepted:
-            self.__langsToTest = dialog.getLangsToTest()
-            print(self.__langsToTest)
+            self.__langs_to_test = dialog.getLangsToTest()
+            print(self.__langs_to_test)
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
         # disable the button when running to prevent error
         self.__runTestBtn.setEnabled(False)
-
-        self.__tDeleted = False
+        
+        self.__t_deleted = False
         self.__t = Thread(n, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__loadingLbl.show)
@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
         self.__t.start()
 
     def __setThreadDeletedFlagForPreventingRuntimeError(self):
-        self.__tDeleted = True
+        self.__t_deleted = True
         self.__t.deleteLater()
 
     def __textEdited(self, text):
@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, e):
         if isinstance(self.__t, QThread):
-            if self.__tDeleted:
+            if self.__t_deleted:
                 e.accept()
             else:
                 QMessageBox.critical(self, 'Warning',
