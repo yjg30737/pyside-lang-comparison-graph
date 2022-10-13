@@ -3,13 +3,17 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 
 If you don't want to test all of them, you can choose some of those languages to test from "Settings".
 
+You can see the real-time log while running the test, pause/resume the test.
+
+You cannot close the window while test is running or paused.
+
 You can save it as png, jpg, pdf file.
 
 See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
 
 ## Requirements
 * R, Go, Python, Rust, Julia - for the test
-* PySide6 - for graph GUI
+* PySide6 - for GUI
 * psutil - for show virtual memory data of your pc
 * num2words - for show number as string name
 
