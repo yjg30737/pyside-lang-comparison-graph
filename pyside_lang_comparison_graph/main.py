@@ -186,19 +186,29 @@ class MainWindow(QMainWindow):
         lay.addWidget(QLabel('Device'))
         lay.addWidget(self.__pcInfo)
 
-        leftWidget = QWidget()
-        leftWidget.setLayout(lay)
+        tablesWidget = QWidget()
+        tablesWidget.setLayout(lay)
 
         lay = QVBoxLayout()
         lay.addWidget(QLabel('Chart'))
         lay.addWidget(self.__chartView)
 
-        rightWidget = QWidget()
-        rightWidget.setLayout(lay)
+        chartWidget = QWidget()
+        chartWidget.setLayout(lay)
+
+        tableChartWidget = QSplitter()
+        tableChartWidget.addWidget(tablesWidget)
+        tableChartWidget.addWidget(chartWidget)
+        tableChartWidget.setChildrenCollapsible(False)
+        tableChartWidget.setHandleWidth(1)
+        tableChartWidget.setStyleSheet(
+            "QSplitterHandle {background-color: lightgray;}")
+        tableChartWidget.setSizes([300, 700])
 
         bottomWidget = QSplitter()
-        bottomWidget.addWidget(leftWidget)
-        bottomWidget.addWidget(rightWidget)
+        bottomWidget.setOrientation(Qt.Vertical)
+        bottomWidget.addWidget(self.__middleWidget)
+        bottomWidget.addWidget(tableChartWidget)
         bottomWidget.setChildrenCollapsible(False)
         bottomWidget.setHandleWidth(1)
         bottomWidget.setStyleSheet(
@@ -207,7 +217,6 @@ class MainWindow(QMainWindow):
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
-        lay.addWidget(self.__middleWidget)
         lay.addWidget(bottomWidget)
 
         mainWidget = QWidget()
