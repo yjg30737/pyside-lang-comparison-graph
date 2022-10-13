@@ -224,17 +224,8 @@ class MainWindow(QMainWindow):
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
-        # disable the button when running in order to prevent error
-        self.__logLbl.setText('Running the test...')
-        self.__runTestBtn.setEnabled(False)
-        self.__settingsBtn.setEnabled(False)
-        self.__saveBtn.setEnabled(False)
-        self.__pauseBtn.setEnabled(True)
-        self.__pauseBtn.setText('Pause')
-        
-        self.__t_deleted = False
         self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
-        self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
+        self.__t.started.connect(self.__handleTestStarted)
         self.__t.started.connect(self.__prepareLogBrowser)
         self.__t.updated.connect(self.__updateLog)
         self.__t.finished.connect(self.__handleTestFinished)
@@ -260,6 +251,17 @@ class MainWindow(QMainWindow):
             self.__pauseBtn.setText('Pause')
             self.__t.resume()
 
+    def __handleTestStarted(self):
+        # set thread deleted flag for preventing runtime error
+        self.__t_deleted = False
+        # disable the button when running in order to prevent error
+        self.__logLbl.setText('Running the test...')
+        self.__runTestBtn.setEnabled(False)
+        self.__settingsBtn.setEnabled(False)
+        self.__saveBtn.setEnabled(False)
+        self.__pauseBtn.setEnabled(True)
+        self.__pauseBtn.setText('Pause')
+
     # enable the button after test is over
     def __handleTestFinished(self):
         self.__logLbl.setText('Finished')
@@ -268,7 +270,7 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
 
-    def __setThreadDeletedFlagForPreventingRuntimeError(self):
+        # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
         self.__t.deleteLater()
 
