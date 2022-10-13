@@ -27,7 +27,7 @@ See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">h
 ### Second
 * python main.py
 * Write the times you want to calculate
-* Press "Run Test" and wait patiently till chart shows the result of test
+* Press "Run Test" and wait patiently till chart shows the result of test or you can pause it if you have urgent matter
 * If you want to save the result, press save
 
 ## Preview
