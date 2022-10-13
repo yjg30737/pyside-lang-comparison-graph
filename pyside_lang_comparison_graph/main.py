@@ -7,7 +7,7 @@ from num2words import num2words
 import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread, QSettings, Signal
+from PySide6.QtCore import QThread, QSettings, Signal, QMutex, QWaitCondition
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
@@ -21,6 +21,10 @@ class Thread(QThread):
 
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
+        self.__mutex = QMutex()
+        self.__pauseCondition = QWaitCondition()
+        self.__paused = False
+
         self.__n = n
         self.__langs_test_available_dict = langs_test_available_dict
         self.__command_dict = {
@@ -33,6 +37,17 @@ class Thread(QThread):
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
+    def pause(self):
+        self.__mutex.lock()
+        self.__paused = True
+        self.__mutex.unlock()
+
+    def resume(self):
+        self.__mutex.lock()
+        self.__paused = False
+        self.__mutex.unlock()
+        self.__pauseCondition.wakeAll()
+
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
             if v:
@@ -44,19 +59,14 @@ class Thread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
-                # realtime_output = p.stdout.readline()
-
                 while True:
-                    # self.__mutex.lock()
-                    # if self.__paused:
-                    #     self.__pauseCondition.wait(self.__mutex)
+                    if self.__paused:
+                        self.__pauseCondition.wait(self.__mutex)
                     realtime_output = p.stdout.readline()
                     if realtime_output == '' and p.poll() is not None:
                         break
-
                     if realtime_output:
                         self.updated.emit(realtime_output.strip())
-                    # self.__mutex.unlock()
                     self.__res_lst.append(realtime_output)
 
 
@@ -142,10 +152,21 @@ class MainWindow(QMainWindow):
         self.__chartView.setRenderHints(QPainter.Antialiasing)
         self.__chartView.setChart(self.__chart)
 
+        self.__logLbl = QLabel()
+        self.__logLbl.setText('Running the test...')
         self.__logBrowser = QTextBrowser()
-        self.__logBrowser.hide()
-
+        self.__pauseBtn = QPushButton('Pause')
+        self.__pauseBtn.clicked.connect(self.__testPauseToggle)
+        
         lay = QVBoxLayout()
+        lay.addWidget(self.__logLbl)
+        lay.addWidget(self.__logBrowser)
+        lay.addWidget(self.__pauseBtn)
+        
+        self.__middleWidget = QWidget()
+        self.__middleWidget.setLayout(lay)
+        self.__middleWidget.setMaximumHeight(self.__middleWidget.sizeHint().height())
+        self.__middleWidget.hide()
 
         self.__tableWidget = QTableWidget()
         self.__tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -159,6 +180,7 @@ class MainWindow(QMainWindow):
         self.__pcInfo = QTextBrowser()
         self.__pcInfo.setText(pcInfo)
 
+        lay = QVBoxLayout()
         lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__tableWidget)
         lay.addWidget(QLabel('Device'))
@@ -185,7 +207,7 @@ class MainWindow(QMainWindow):
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
-        lay.addWidget(self.__logBrowser)
+        lay.addWidget(self.__middleWidget)
         lay.addWidget(bottomWidget)
 
         mainWidget = QWidget()
@@ -203,33 +225,48 @@ class MainWindow(QMainWindow):
         n = self.__timesLineEdit.text().replace(',', '')
 
         # disable the button when running in order to prevent error
+        self.__logLbl.setText('Running the test...')
         self.__runTestBtn.setEnabled(False)
         self.__settingsBtn.setEnabled(False)
         self.__saveBtn.setEnabled(False)
+        self.__pauseBtn.setEnabled(True)
+        self.__pauseBtn.setText('Pause')
         
         self.__t_deleted = False
         self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
         self.__t.started.connect(self.__prepareLogBrowser)
         self.__t.updated.connect(self.__updateLog)
-        self.__t.finished.connect(self.__handleButton)
+        self.__t.finished.connect(self.__handleTestFinished)
         self.__t.finished.connect(self.__setChart)
         self.__t.start()
 
     def __prepareLogBrowser(self):
-        if self.__logBrowser.isVisible():
+        if self.__middleWidget.isVisible():
             self.__logBrowser.clear()
         else:
-            self.__logBrowser.show()
+            self.__middleWidget.show()
 
     def __updateLog(self, line):
         self.__logBrowser.append(line)
 
+    def __testPauseToggle(self):
+        if self.__pauseBtn.text() == 'Pause':
+            self.__logLbl.setText('Test paused')
+            self.__pauseBtn.setText('Resume')
+            self.__t.pause()
+        elif self.__pauseBtn.text() == 'Resume':
+            self.__logLbl.setText('Running the test...')
+            self.__pauseBtn.setText('Pause')
+            self.__t.resume()
+
     # enable the button after test is over
-    def __handleButton(self):
+    def __handleTestFinished(self):
+        self.__logLbl.setText('Finished')
         self.__runTestBtn.setEnabled(True)
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
+        self.__pauseBtn.setEnabled(False)
 
     def __setThreadDeletedFlagForPreventingRuntimeError(self):
         self.__t_deleted = True
