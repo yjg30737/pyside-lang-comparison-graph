@@ -5,7 +5,7 @@ If you don't want to test all of them, you can choose some of those languages to
 
 You can see the real-time log while running the test, pause/resume the test.
 
-You cannot close the window while test is running or paused.
+You cannot close the app while test is running or paused.
 
 You can save it as png, jpg, pdf file.
 
