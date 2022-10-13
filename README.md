@@ -1,6 +1,8 @@
 # pyside-lang-comparison-graph
 Execute R, Go, Python, Rust, Julia performance test and show result with PySide graph(chart) to compare with each other
 
+If you don't want to test all of them, you can choose some of those languages to test from "Settings".
+
 You can save it as png, jpg, pdf file.
 
 See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
