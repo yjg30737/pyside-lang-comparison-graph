@@ -7,7 +7,7 @@ from num2words import num2words
 import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread, QSettings
+from PySide6.QtCore import QThread, QSettings, Signal
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
@@ -17,6 +17,8 @@ from settingsDialog import SettingsDialog
 
 
 class Thread(QThread):
+    updated = Signal(str)
+
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
         self.__n = n
@@ -34,8 +36,28 @@ class Thread(QThread):
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
             if v:
-                p = subprocess.run(self.__command_dict[k] + [self.__n], capture_output=True, text=True)
-                self.__res_lst.append(p.stdout)
+                p = subprocess.Popen(self.__command_dict[k] + [self.__n],
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT,
+                                     text=True,
+                                     shell=True,
+                                     encoding='utf-8',
+                                     errors='replace'
+                                     )
+                # realtime_output = p.stdout.readline()
+
+                while True:
+                    # self.__mutex.lock()
+                    # if self.__paused:
+                    #     self.__pauseCondition.wait(self.__mutex)
+                    realtime_output = p.stdout.readline()
+                    if realtime_output == '' and p.poll() is not None:
+                        break
+
+                    if realtime_output:
+                        self.updated.emit(realtime_output.strip())
+                    # self.__mutex.unlock()
+                    self.__res_lst.append(realtime_output)
 
 
 class MainWindow(QMainWindow):
@@ -120,10 +142,8 @@ class MainWindow(QMainWindow):
         self.__chartView.setRenderHints(QPainter.Antialiasing)
         self.__chartView.setChart(self.__chart)
 
-        self.__loadingLbl = QLabel('Loading...')
-        self.__loadingLbl.setAlignment(Qt.AlignCenter)
-        self.__loadingLbl.setMaximumHeight(self.__loadingLbl.sizeHint().height())
-        self.__loadingLbl.hide()
+        self.__logBrowser = QTextBrowser()
+        self.__logBrowser.hide()
 
         lay = QVBoxLayout()
 
@@ -165,7 +185,7 @@ class MainWindow(QMainWindow):
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
-        lay.addWidget(self.__loadingLbl)
+        lay.addWidget(self.__logBrowser)
         lay.addWidget(bottomWidget)
 
         mainWidget = QWidget()
@@ -190,11 +210,20 @@ class MainWindow(QMainWindow):
         self.__t_deleted = False
         self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__t.finished.connect(self.__setThreadDeletedFlagForPreventingRuntimeError)
-        self.__t.started.connect(self.__loadingLbl.show)
-        self.__t.finished.connect(self.__loadingLbl.hide)
+        self.__t.started.connect(self.__prepareLogBrowser)
+        self.__t.updated.connect(self.__updateLog)
         self.__t.finished.connect(self.__handleButton)
         self.__t.finished.connect(self.__setChart)
         self.__t.start()
+
+    def __prepareLogBrowser(self):
+        if self.__logBrowser.isVisible():
+            self.__logBrowser.clear()
+        else:
+            self.__logBrowser.show()
+
+    def __updateLog(self, line):
+        self.__logBrowser.append(line)
 
     # enable the button after test is over
     def __handleButton(self):
