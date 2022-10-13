@@ -18,13 +18,13 @@ See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">h
 * num2words - for show number as string name
 
 ## Usage
-### First
+### Install
 #### If you want to clone
 * git clone ~
 * python -m pip install psutil num2words
 #### If you want to install this with pip
 * python -m pip install git+https://github.com/yjg30737/pyside-lang-comparison-graph.git --upgrade
-### Second
+### Run Test
 * python main.py
 * Write the times you want to calculate
 * Press "Run Test" and wait patiently till chart shows the result of test or you can pause it if you have urgent matter
