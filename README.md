@@ -28,4 +28,4 @@ See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">h
 
 ## Preview
 
-![image](https://user-images.githubusercontent.com/55078043/194853301-83c1e399-aa4d-463e-83e2-8b8bcc5c0483.png)
+![image](https://user-images.githubusercontent.com/55078043/195475796-9e19e5b6-8fea-472c-bdd1-2e9cb40eadf6.png)
