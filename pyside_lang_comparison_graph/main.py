@@ -55,7 +55,6 @@ class Thread(QThread):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT,
                                      text=True,
-                                     shell=True,
                                      encoding='utf-8',
                                      errors='replace'
                                      )
@@ -287,6 +286,7 @@ class MainWindow(QMainWindow):
     def __textEdited(self, text):
         if text:
             n = int(text.replace(',', ''))
+
             self.__timesLineEdit.setText(f'{n:,}')
             n_text = num2words(n)
             self.__timesNameLbl.setText(n_text)
