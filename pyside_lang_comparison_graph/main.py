@@ -114,6 +114,7 @@ class MainWindow(QMainWindow):
 
         self.__saveBtn = QPushButton('Save')
         self.__saveBtn.clicked.connect(self.__save)
+        self.__saveBtn.setEnabled(False)
 
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Times'))
