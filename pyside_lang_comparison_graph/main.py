@@ -24,6 +24,7 @@ class Thread(QThread):
         self.__mutex = QMutex()
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
+        self.__stopped = False
 
         self.__n = n
         self.__langs_test_available_dict = langs_test_available_dict
@@ -48,6 +49,9 @@ class Thread(QThread):
         self.__mutex.unlock()
         self.__pauseCondition.wakeAll()
 
+    def stop(self):
+        self.__stopped = True
+
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
             if v:
@@ -59,6 +63,13 @@ class Thread(QThread):
                                      errors='replace'
                                      )
                 while True:
+                    # stop
+                    if self.__stopped:
+                        p.terminate()
+                        p.wait()
+                        self.__stopped = False
+                        return
+                    # pause
                     if self.__paused:
                         self.__pauseCondition.wait(self.__mutex)
                     realtime_output = p.stdout.readline()
@@ -155,13 +166,17 @@ class MainWindow(QMainWindow):
         self.__logLbl = QLabel()
         self.__logLbl.setText('Running the test...')
         self.__logBrowser = QTextBrowser()
+
         self.__pauseBtn = QPushButton('Pause')
         self.__pauseBtn.clicked.connect(self.__testPauseToggle)
+        self.__stopBtn = QPushButton('Stop')
+        self.__stopBtn.clicked.connect(self.__stop)
         
         lay = QVBoxLayout()
         lay.addWidget(self.__logLbl)
         lay.addWidget(self.__logBrowser)
         lay.addWidget(self.__pauseBtn)
+        lay.addWidget(self.__stopBtn)
         
         self.__middleWidget = QWidget()
         self.__middleWidget.setLayout(lay)
@@ -260,6 +275,9 @@ class MainWindow(QMainWindow):
             self.__pauseBtn.setText('Pause')
             self.__t.resume()
 
+    def __stop(self):
+        self.__t.stop()
+
     def __handleTestStarted(self):
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = False
@@ -270,6 +288,7 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(False)
         self.__pauseBtn.setEnabled(True)
         self.__pauseBtn.setText('Pause')
+        self.__stopBtn.setEnabled(True)
 
     # enable the button after test is over
     def __handleTestFinished(self):
@@ -278,6 +297,7 @@ class MainWindow(QMainWindow):
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
+        self.__stopBtn.setEnabled(False)
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
