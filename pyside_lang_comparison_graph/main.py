@@ -171,12 +171,18 @@ class MainWindow(QMainWindow):
         self.__pauseBtn.clicked.connect(self.__testPauseToggle)
         self.__stopBtn = QPushButton('Stop')
         self.__stopBtn.clicked.connect(self.__stop)
+
+        lay = QHBoxLayout()
+        lay.addWidget(self.__pauseBtn)
+        lay.addWidget(self.__stopBtn)
+        btnWidget = QWidget()
+        btnWidget.setLayout(lay)
         
         lay = QVBoxLayout()
         lay.addWidget(self.__logLbl)
         lay.addWidget(self.__logBrowser)
-        lay.addWidget(self.__pauseBtn)
-        lay.addWidget(self.__stopBtn)
+        lay.addWidget(btnWidget)
+        lay.setContentsMargins(0, 0, 0, 0)
         
         self.__middleWidget = QWidget()
         self.__middleWidget.setLayout(lay)
