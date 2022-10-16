@@ -97,6 +97,7 @@ class TestThread(QThread):
         return self.__p.pid
 
 
+
 class UsageMonitorThread(QThread):
     def __init__(self):
         super().__init__()
@@ -376,8 +377,10 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
+        # This indicates that test is finished, not being stopped by user
         if self.__usageMoniterThread.isRunning():
             self.__usageMoniterThread.stop()
+            self.__updateLog('Finished!', QColor(0, 0, 0), QApplication.font())
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
