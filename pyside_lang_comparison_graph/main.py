@@ -81,6 +81,26 @@ class TestThread(QThread):
                     self.__res_lst.append(realtime_output)
 
 
+class UsageMonitorThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self.__stopped = False
+
+    def stop(self):
+        self.__stopped = True
+
+    def run(self) -> None:
+        while True:
+            if self.__stopped:
+                self.__stopped = False
+                return
+            else:
+                print('CPU usage:', psutil.cpu_percent())
+                print('MEM usage:', psutil.virtual_memory().percent)
+
+
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -94,6 +114,7 @@ class MainWindow(QMainWindow):
         self.__t_deleted = False
         # Thread for running test
         self.__testThread = ''
+        self.__usageMoniterThread = ''
 
     def __initSettings(self):
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
@@ -254,9 +275,8 @@ class MainWindow(QMainWindow):
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
-        
-        # print('CPU usage:', psutil.cpu_percent())
-        # print('MEM usage:', psutil.virtual_memory().percent)
+
+        self.__usageMoniterThread = UsageMonitorThread()
 
         self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__testThread.started.connect(self.__handleTestStarted)
@@ -265,9 +285,6 @@ class MainWindow(QMainWindow):
         self.__testThread.finished.connect(self.__handleTestFinished)
         self.__testThread.finished.connect(self.__setChart)
         self.__testThread.start()
-
-        # self.__usageMoniterThread = Thread()
-        # self.__usageMoniterThread
 
     def __prepareLogBrowser(self):
         if self.__middleWidget.isVisible():
@@ -304,6 +321,7 @@ class MainWindow(QMainWindow):
         self.__pauseBtn.setEnabled(True)
         self.__pauseBtn.setText('Pause')
         self.__stopBtn.setEnabled(True)
+        self.__usageMoniterThread.start()
 
     # enable the button after test is over
     def __handleTestFinished(self):
@@ -313,6 +331,7 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
+        self.__usageMoniterThread.stop()
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
