@@ -54,6 +54,8 @@ class TestThread(QThread):
         self.__pauseCondition.wakeAll()
 
     def stop(self):
+        # if self.__paused:
+        #       self.resume()
         self.__stopped = True
 
     def run(self):
@@ -66,7 +68,6 @@ class TestThread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
-                print(type(self.__p))
                 self.updated.emit(f" {'='*5} {k} {'='*5} ")
                 while True:
                     # stop
@@ -94,8 +95,9 @@ class UsageMonitorThread(QThread):
         super().__init__()
         self.__stopped = False
 
-    def stop(self, pid):
-        os.kill(pid, signal.SIGINT)
+    def stop(self, pid=None):
+        if pid:
+            os.kill(pid, signal.SIGINT)
         self.__stopped = True
 
     def run(self) -> None:
@@ -316,6 +318,8 @@ class MainWindow(QMainWindow):
 
     def __stop(self):
         self.__testThread.stop()
+        pid = self.__testThread.currentProcessPid()
+        self.__usageMoniterThread.stop(pid)
 
     def __handleTestStarted(self):
         # set thread deleted flag for preventing runtime error
@@ -338,10 +342,8 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
-
-        pid = self.__testThread.currentProcessPid()
-        self.__usageMoniterThread.stop(pid)
-        print('stop')
+        if self.__usageMoniterThread.isRunning():
+            self.__usageMoniterThread.stop()
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
