@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 import operator
 import psutil
@@ -25,6 +27,8 @@ class TestThread(QThread):
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
         self.__stopped = False
+        # process
+        self.__p = ''
 
         self.__n = n
         self.__langs_test_available_dict = langs_test_available_dict
@@ -55,30 +59,35 @@ class TestThread(QThread):
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
             if v:
-                p = subprocess.Popen(self.__command_dict[k] + [self.__n],
+                self.__p = subprocess.Popen(self.__command_dict[k] + [self.__n],
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT,
                                      text=True,
                                      encoding='utf-8',
                                      errors='replace'
                                      )
+                print(type(self.__p))
                 self.updated.emit(f" {'='*5} {k} {'='*5} ")
                 while True:
                     # stop
                     if self.__stopped:
-                        p.terminate()
-                        p.wait()
+                        # p.terminate()
+                        # p.wait()
                         self.__stopped = False
                         return
                     # pause
                     if self.__paused:
                         self.__pauseCondition.wait(self.__mutex)
-                    realtime_output = p.stdout.readline()
-                    if realtime_output == '' and p.poll() is not None:
+                    realtime_output = self.__p.stdout.readline()
+                    if realtime_output == '' and self.__p.poll() is not None:
                         break
                     if realtime_output:
                         self.updated.emit(realtime_output.strip())
                     self.__res_lst.append(realtime_output)
+
+    def currentProcessPid(self):
+        return self.__p.pid
+
 
 
 class UsageMonitorThread(QThread):
@@ -86,7 +95,8 @@ class UsageMonitorThread(QThread):
         super().__init__()
         self.__stopped = False
 
-    def stop(self):
+    def stop(self, pid):
+        os.kill(pid, signal.SIGINT)
         self.__stopped = True
 
     def run(self) -> None:
@@ -308,7 +318,9 @@ class MainWindow(QMainWindow):
             self.__testThread.resume()
 
     def __stop(self):
+        pid = self.__testThread.currentProcessPid()
         self.__testThread.stop()
+        self.__usageMoniterThread.stop(pid)
 
     def __handleTestStarted(self):
         # set thread deleted flag for preventing runtime error
