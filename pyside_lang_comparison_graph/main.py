@@ -89,7 +89,6 @@ class TestThread(QThread):
         return self.__p.pid
 
 
-
 class UsageMonitorThread(QThread):
     def __init__(self):
         super().__init__()
@@ -107,8 +106,6 @@ class UsageMonitorThread(QThread):
             else:
                 print('CPU usage:', psutil.cpu_percent())
                 print('MEM usage:', psutil.virtual_memory().percent)
-
-
 
 
 class MainWindow(QMainWindow):
@@ -318,9 +315,7 @@ class MainWindow(QMainWindow):
             self.__testThread.resume()
 
     def __stop(self):
-        pid = self.__testThread.currentProcessPid()
         self.__testThread.stop()
-        self.__usageMoniterThread.stop(pid)
 
     def __handleTestStarted(self):
         # set thread deleted flag for preventing runtime error
@@ -343,10 +338,14 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
-        self.__usageMoniterThread.stop()
+
+        pid = self.__testThread.currentProcessPid()
+        self.__usageMoniterThread.stop(pid)
+        print('stop')
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
+        self.__usageMoniterThread.deleteLater()
         self.__testThread.deleteLater()
 
     def __textEdited(self, text):
