@@ -75,12 +75,11 @@ class TestThread(QThread):
                 # log which indicates the certain language's test started with dark-green color and emphasized font
                 fnt = QFont('Arial', 10)
                 fnt.setBold(True)
-                self.updated.emit(f" {'='*5} {k} {'='*5} ", QColor(0, 155, 0), fnt)
+                self.updated.emit(f"{'='*5} {k} {'='*5}", QColor(0, 155, 0), fnt)
                 while True:
                     # stop
                     if self.__stopped:
-                        # p.terminate()
-                        # p.wait()
+                        self.updated.emit(f"Test Stopped", QColor(155, 0, 0), fnt)
                         self.__stopped = False
                         return
                     # pause
