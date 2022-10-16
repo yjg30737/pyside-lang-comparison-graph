@@ -10,7 +10,8 @@ import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
 from PySide6.QtCore import QThread, QSettings, Signal, QMutex, QWaitCondition
-from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap
+from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap, QColor, QTextCursor, \
+    QTextCharFormat, QBrush, QFont
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
     QVBoxLayout, QWidget, QApplication, QFileDialog, QTextBrowser, QSplitter, QHeaderView, QTableWidget, \
     QTableWidgetItem, QAbstractItemView, QDialog, QMessageBox
@@ -19,7 +20,10 @@ from settingsDialog import SettingsDialog
 
 
 class TestThread(QThread):
-    updated = Signal(str)
+    # str is text
+    # QColor is color of text
+    # QFont is font of text
+    updated = Signal(str, QColor, QFont)
 
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
@@ -68,7 +72,10 @@ class TestThread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
-                self.updated.emit(f" {'='*5} {k} {'='*5} ")
+                # log which indicates the certain language's test started with dark-green color and emphasized font
+                fnt = QFont('Arial', 10)
+                fnt.setBold(True)
+                self.updated.emit(f" {'='*5} {k} {'='*5} ", QColor(0, 155, 0), fnt)
                 while True:
                     # stop
                     if self.__stopped:
@@ -83,7 +90,8 @@ class TestThread(QThread):
                     if realtime_output == '' and self.__p.poll() is not None:
                         break
                     if realtime_output:
-                        self.updated.emit(realtime_output.strip())
+                        # log with default color and text
+                        self.updated.emit(realtime_output.strip(), QColor(0, 0, 0), QApplication.font())
                     self.__res_lst.append(realtime_output)
 
     def currentProcessPid(self):
@@ -318,7 +326,15 @@ class MainWindow(QMainWindow):
         else:
             self.__middleWidget.show()
 
-    def __updateLog(self, line):
+    def __updateLog(self, line, color, font):
+        cur = self.__logBrowser.textCursor()
+        fmt = QTextCharFormat()
+        fmt.setFont(font)
+        fmt.setForeground(QBrush(color))
+        cur.setCharFormat(fmt)
+        self.__logBrowser.moveCursor(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
+        self.__logBrowser.moveCursor(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        self.__logBrowser.setTextCursor(cur)
         self.__logBrowser.append(line)
         vBar = self.__logBrowser.verticalScrollBar()
         vBar.setValue(vBar.maximum())
