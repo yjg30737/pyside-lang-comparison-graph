@@ -369,18 +369,22 @@ class MainWindow(QMainWindow):
         self.__stopBtn.setEnabled(True)
         self.__usageMoniterThread.start()
 
+    def __isTestNotStopped(self):
+        return self.__usageMoniterThread.isRunning()
+
     # enable the button after test is over
     def __handleTestFinished(self):
-        self.__logLbl.setText('Finished')
         self.__runTestBtn.setEnabled(True)
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
-        # This indicates that test is finished, not being stopped by user
-        if self.__usageMoniterThread.isRunning():
+        if self.__isTestNotStopped():
+            self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
             self.__updateLog('Finished!', QColor(0, 0, 0), QApplication.font())
+        else:
+            self.__logLbl.setText('Stopped')
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
