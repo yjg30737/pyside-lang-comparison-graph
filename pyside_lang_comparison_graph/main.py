@@ -54,8 +54,8 @@ class TestThread(QThread):
         self.__pauseCondition.wakeAll()
 
     def stop(self):
-        # if self.__paused:
-        #       self.resume()
+        if self.__paused:
+            self.resume()
         self.__stopped = True
 
     def run(self):
@@ -93,9 +93,25 @@ class TestThread(QThread):
 class UsageMonitorThread(QThread):
     def __init__(self):
         super().__init__()
+        self.__mutex = QMutex()
+        self.__pauseCondition = QWaitCondition()
+        self.__paused = False
         self.__stopped = False
 
+    def pause(self):
+        self.__mutex.lock()
+        self.__paused = True
+        self.__mutex.unlock()
+
+    def resume(self):
+        self.__mutex.lock()
+        self.__paused = False
+        self.__mutex.unlock()
+        self.__pauseCondition.wakeAll()
+
     def stop(self, pid=None):
+        if self.__paused:
+            self.resume()
         if pid:
             os.kill(pid, signal.SIGINT)
         self.__stopped = True
@@ -105,9 +121,10 @@ class UsageMonitorThread(QThread):
             if self.__stopped:
                 self.__stopped = False
                 return
-            else:
-                print('CPU usage:', psutil.cpu_percent())
-                print('MEM usage:', psutil.virtual_memory().percent)
+            if self.__paused:
+                self.__pauseCondition.wait(self.__mutex)
+            print('CPU usage:', psutil.cpu_percent())
+            print('MEM usage:', psutil.virtual_memory().percent)
 
 
 class MainWindow(QMainWindow):
@@ -311,10 +328,12 @@ class MainWindow(QMainWindow):
             self.__logLbl.setText('Test paused')
             self.__pauseBtn.setText('Resume')
             self.__testThread.pause()
+            self.__usageMoniterThread.pause()
         elif self.__pauseBtn.text() == 'Resume':
             self.__logLbl.setText('Running the test...')
             self.__pauseBtn.setText('Pause')
             self.__testThread.resume()
+            self.__usageMoniterThread.resume()
 
     def __stop(self):
         self.__testThread.stop()
