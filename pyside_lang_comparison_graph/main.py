@@ -175,6 +175,7 @@ class MainWindow(QMainWindow):
         lay = QHBoxLayout()
         lay.addWidget(self.__pauseBtn)
         lay.addWidget(self.__stopBtn)
+        lay.setContentsMargins(0, 0, 0, 0)
         btnWidget = QWidget()
         btnWidget.setLayout(lay)
         
@@ -182,7 +183,6 @@ class MainWindow(QMainWindow):
         lay.addWidget(self.__logLbl)
         lay.addWidget(self.__logBrowser)
         lay.addWidget(btnWidget)
-        lay.setContentsMargins(0, 0, 0, 0)
         
         self.__middleWidget = QWidget()
         self.__middleWidget.setLayout(lay)
