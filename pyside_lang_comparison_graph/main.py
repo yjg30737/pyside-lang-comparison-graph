@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpac
 from settingsDialog import SettingsDialog
 
 
-class Thread(QThread):
+class TestThread(QThread):
     updated = Signal(str)
 
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
         self.__res_lst = []
         self.__t_deleted = False
         # Thread for running test
-        self.__t = ''
+        self.__testThread = ''
 
     def __initSettings(self):
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
@@ -254,14 +254,20 @@ class MainWindow(QMainWindow):
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
+        
+        # print('CPU usage:', psutil.cpu_percent())
+        # print('MEM usage:', psutil.virtual_memory().percent)
 
-        self.__t = Thread(n, self.__langs_test_available_dict, self.__res_lst)
-        self.__t.started.connect(self.__handleTestStarted)
-        self.__t.started.connect(self.__prepareLogBrowser)
-        self.__t.updated.connect(self.__updateLog)
-        self.__t.finished.connect(self.__handleTestFinished)
-        self.__t.finished.connect(self.__setChart)
-        self.__t.start()
+        self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
+        self.__testThread.started.connect(self.__handleTestStarted)
+        self.__testThread.started.connect(self.__prepareLogBrowser)
+        self.__testThread.updated.connect(self.__updateLog)
+        self.__testThread.finished.connect(self.__handleTestFinished)
+        self.__testThread.finished.connect(self.__setChart)
+        self.__testThread.start()
+
+        # self.__usageMoniterThread = Thread()
+        # self.__usageMoniterThread
 
     def __prepareLogBrowser(self):
         if self.__middleWidget.isVisible():
@@ -278,14 +284,14 @@ class MainWindow(QMainWindow):
         if self.__pauseBtn.text() == 'Pause':
             self.__logLbl.setText('Test paused')
             self.__pauseBtn.setText('Resume')
-            self.__t.pause()
+            self.__testThread.pause()
         elif self.__pauseBtn.text() == 'Resume':
             self.__logLbl.setText('Running the test...')
             self.__pauseBtn.setText('Pause')
-            self.__t.resume()
+            self.__testThread.resume()
 
     def __stop(self):
-        self.__t.stop()
+        self.__testThread.stop()
 
     def __handleTestStarted(self):
         # set thread deleted flag for preventing runtime error
@@ -310,7 +316,7 @@ class MainWindow(QMainWindow):
 
         # set thread deleted flag for preventing runtime error
         self.__t_deleted = True
-        self.__t.deleteLater()
+        self.__testThread.deleteLater()
 
     def __textEdited(self, text):
         if text:
@@ -389,7 +395,7 @@ class MainWindow(QMainWindow):
             subprocess.Popen(r'explorer /select,"' + path + '"')
 
     def closeEvent(self, e):
-        if isinstance(self.__t, QThread):
+        if isinstance(self.__testThread, QThread):
             if self.__t_deleted:
                 e.accept()
             else:
