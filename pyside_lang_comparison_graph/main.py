@@ -62,6 +62,7 @@ class Thread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
+                self.updated.emit(f" {'='*5} {k} {'='*5} ")
                 while True:
                     # stop
                     if self.__stopped:
