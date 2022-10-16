@@ -271,6 +271,8 @@ class MainWindow(QMainWindow):
 
     def __updateLog(self, line):
         self.__logBrowser.append(line)
+        vBar = self.__logBrowser.verticalScrollBar()
+        vBar.setValue(vBar.maximum())
 
     def __testPauseToggle(self):
         if self.__pauseBtn.text() == 'Pause':
