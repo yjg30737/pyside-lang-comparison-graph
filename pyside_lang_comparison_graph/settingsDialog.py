@@ -87,10 +87,15 @@ class CheckBoxTableWidget(QTableWidget):
         self.checkedSignal.emit(r_idx, flag)
 
     def toggleState(self, state):
+        print(state)
         for i in range(self.rowCount()):
             item = super().cellWidget(i, 0).layout().itemAt(0).widget()
-            if item.checkState() != state:
-                item.setCheckState(state)
+            if int(item.checkState()) != state:
+                # handle setCheckState for PySide
+                if state == 2:
+                    item.setCheckState(Qt.Checked)
+                elif state == 0:
+                    item.setCheckState(Qt.Unchecked)
 
     def getCheckedRows(self):
         return self.__getCheckedStateOfRows(Qt.Checked)
@@ -167,8 +172,13 @@ class SettingsDialog(QDialog):
                 btn.setText('Install')
             self.__langTableWidget.setCellWidget(i, 2, btn)
 
+        allChkBox = QCheckBox('Check All')
+        allChkBox.stateChanged.connect(self.__langTableWidget.toggleState)
+        allChkBox.setChecked(True)
+
         lay = QVBoxLayout()
         lay.addWidget(QLabel('Select Languages to Test'))
+        lay.addWidget(allChkBox)
         lay.addWidget(self.__langTableWidget)
 
         topWidget = QWidget()
