@@ -145,15 +145,19 @@ class SettingsDialog(QDialog):
         self.__timeoutSeconds = 0
 
     def __initSettings(self):
-        # ini - general
+        # [Languages]
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
+        self.__settingsStruct.beginGroup('Languages')
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
+        self.__settingsStruct.endGroup()
 
-        # ini - test
-        self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
-        self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
+        # [Test]
+        self.__settingsStruct.beginGroup('Test')
+        self.__timeoutEnabled = self.__settingsStruct.value('TimeoutEnabled')
+        self.__timeoutSeconds = self.__settingsStruct.value('TimeoutSeconds')
+        self.__settingsStruct.endGroup()
 
     def __initUi(self):
         self.setWindowTitle('Settings')

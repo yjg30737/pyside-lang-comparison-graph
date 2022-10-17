@@ -2,6 +2,8 @@ import os
 import signal
 import subprocess
 import operator
+import time
+
 import psutil
 from psutil._common import bytes2human
 import re
@@ -99,12 +101,14 @@ class TestThread(QThread):
 
 
 class TestMonitorThread(QThread):
-    def __init__(self):
+    timeElapsed = Signal()
+    def __init__(self, seconds=None):
         super().__init__()
         self.__mutex = QMutex()
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
         self.__stopped = False
+        self.__timeoutSeconds = seconds
 
     def pause(self):
         self.__mutex.lock()
@@ -125,15 +129,23 @@ class TestMonitorThread(QThread):
         self.__stopped = True
 
     def run(self) -> None:
+        start_time = time.time()
         while True:
+            elapsed_time = time.time()
+            print(abs(elapsed_time-start_time))
+            if self.__timeoutSeconds:
+                if abs(elapsed_time-start_time) == self.__timeoutSeconds:
+                    self.timeElapsed.emit()
+                    print('Good!')
+
             if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
             if self.__paused:
                 self.__pauseCondition.wait(self.__mutex)
 
-            print('CPU usage:', psutil.cpu_percent())
-            print('MEM usage:', psutil.virtual_memory().percent)
+            # print('CPU usage:', psutil.cpu_percent())
+            # print('MEM usage:', psutil.virtual_memory().percent)
 
 
 class MainWindow(QMainWindow):
@@ -152,12 +164,15 @@ class MainWindow(QMainWindow):
         self.__usageMoniterThread = ''
 
     def __initSettings(self):
+        # [Languages]
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
+        self.__settingsStruct.beginGroup('Languages')
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
+        self.__settingsStruct.endGroup()
 
-        # ini - test
+        # [Test]
         self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
         self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
 
@@ -315,7 +330,10 @@ class MainWindow(QMainWindow):
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
-        self.__usageMoniterThread = TestMonitorThread()
+        # if timeout is available, give timeout to thread
+        # None means that it doesn't use timeout feature
+        seconds = self.__timeoutSeconds if self.__timeoutEnabled else None
+        self.__usageMoniterThread = TestMonitorThread(seconds)
 
         self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__testThread.started.connect(self.__handleTestStarted)
