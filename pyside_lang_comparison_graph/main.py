@@ -131,12 +131,12 @@ class TestMonitorThread(QThread):
     def run(self) -> None:
         start_time = time.time()
         while True:
-            elapsed_time = time.time()
-            print(abs(elapsed_time-start_time))
-            if self.__timeoutSeconds:
-                if abs(elapsed_time-start_time) == self.__timeoutSeconds:
-                    self.timeElapsed.emit()
-                    print('Good!')
+            # elapsed_time = time.time()
+            # print(abs(elapsed_time-start_time))
+            # if self.__timeoutSeconds:
+            #     if abs(elapsed_time-start_time) == self.__timeoutSeconds:
+            #         self.timeElapsed.emit()
+            #         print('Good!')
 
             if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
@@ -400,6 +400,7 @@ class MainWindow(QMainWindow):
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
+        self.__stopBtn.setEnabled(False)
         if self.__isTestFinished():
             self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
