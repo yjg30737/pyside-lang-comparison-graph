@@ -157,6 +157,10 @@ class MainWindow(QMainWindow):
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
 
+        # ini - test
+        self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
+        self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
+
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
 

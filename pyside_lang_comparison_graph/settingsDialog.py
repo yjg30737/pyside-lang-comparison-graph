@@ -155,8 +155,6 @@ class SettingsDialog(QDialog):
         self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
         self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
 
-        print(self.__timeoutEnabled, self.__timeoutSeconds)
-
     def __initUi(self):
         self.setWindowTitle('Settings')
         self.__langTableWidget = CheckBoxTableWidget()
