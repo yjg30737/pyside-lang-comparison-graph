@@ -60,6 +60,7 @@ class TestThread(QThread):
         self.__fnt.setBold(True)
 
     def pause(self):
+        # todo fix the second lock make app freeze
         self.__mutex.lock()
         self.__paused = True
         self.__mutex.unlock()
