@@ -155,7 +155,7 @@ class SettingsDialog(QDialog):
 
         # [Test]
         self.__settingsStruct.beginGroup('Test')
-        self.__timeoutEnabled = self.__settingsStruct.value('TimeoutEnabled')
+        self.__timeoutEnabled = int(self.__settingsStruct.value('TimeoutEnabled'))
         self.__timeoutSeconds = int(self.__settingsStruct.value('TimeoutSeconds'))
         self.__settingsStruct.endGroup()
 
@@ -266,5 +266,7 @@ class SettingsDialog(QDialog):
         dict = self.getLangsDict()
         for k, v in dict.items():
             self.__settingsStruct.setValue(k, v)
-        self.__settingsStruct.setValue('Test/TimeoutEnabled', int(self.__setTimeOutCheckBox.isChecked()))
-        self.__settingsStruct.setValue('Test/TimeoutSeconds', self.__timeOutSpinBox.value())
+        self.__settingsStruct.beginGroup('Test')
+        self.__settingsStruct.setValue('TimeoutEnabled', int(self.__setTimeOutCheckBox.isChecked()))
+        self.__settingsStruct.setValue('TimeoutSeconds', self.__timeOutSpinBox.value())
+        self.__settingsStruct.endGroup()

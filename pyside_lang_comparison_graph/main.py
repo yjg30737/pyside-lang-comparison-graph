@@ -37,7 +37,7 @@ class TestThread(QThread):
         self.__stopped = False
         self.__stoppedCurrentTest = False
 
-        # process
+        # process (subprocess.Popen)
         self.__p = ''
 
         # number of calculation
@@ -65,13 +65,11 @@ class TestThread(QThread):
     def pause(self):
         self.__mutex.lock()
         self.__paused = True
-        self.__p_process.suspend()
         self.__mutex.unlock()
 
     def resume(self):
         self.__mutex.lock()
         self.__paused = False
-        self.__p_process.resume()
         self.__mutex.unlock()
         self.__pauseCondition.wakeAll()
 
@@ -95,7 +93,6 @@ class TestThread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
-                self.__p_process = psutil.Process(pid=self.__p.pid)
 
                 self.updated.emit(f"{k} Test Started!", QColor(0, 155, 0), self.__fnt)
                 while True:
@@ -122,6 +119,7 @@ class TestThread(QThread):
     def __curLangTestTimedOut(self, k):
         self.updated.emit(f"{k} test timed out - exceeds {self.__timeoutSeconds} seconds.", QColor(200, 0, 0), self.__fnt)
         self.__stoppedCurrentTest = False
+
     def __curLangTestFinished(self, k):
         self.curTestFinished.emit()
         self.updated.emit(f'{k} Test Finished!', QColor(0, 0, 200), self.__fnt)
@@ -170,14 +168,11 @@ class TestMonitorThread(QThread):
                 if int(abs(elapsed_time-start_time)) == self.__timeoutSeconds:
                     start_time = time.time()
                     self.timeElapsed.emit(self.__timeoutSeconds)
-            if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
+            if self.__stopped or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
             if self.__paused:
                 self.__pauseCondition.wait(self.__mutex)
-
-            # print('CPU usage:', psutil.cpu_percent())
-            # print('MEM usage:', psutil.virtual_memory().percent)
 
     def resetTime(self):
         self.__resetFlag = True
