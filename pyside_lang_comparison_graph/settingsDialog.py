@@ -36,6 +36,15 @@ class CheckBox(QWidget):
         f = self.layout().itemAt(0).widget().isChecked()
         return Qt.Checked if f else Qt.Unchecked
 
+    def setChecked(self, f):
+        if isinstance(f, Qt.CheckState):
+            self.getCheckBox().setCheckState(f)
+        elif isinstance(f, bool):
+            self.getCheckBox().setChecked(f)
+
+    def getCheckBox(self):
+        return self.layout().itemAt(0).widget()
+
 
 class CheckBoxTableWidget(QTableWidget):
     checkedSignal = Signal(int, Qt.CheckState)
@@ -88,13 +97,8 @@ class CheckBoxTableWidget(QTableWidget):
 
     def toggleState(self, state):
         for i in range(self.rowCount()):
-            item = super().cellWidget(i, 0).layout().itemAt(0).widget()
-            if int(item.checkState()) != state:
-                # handle setCheckState for PySide
-                if state == 2:
-                    item.setCheckState(Qt.Checked)
-                elif state == 0:
-                    item.setCheckState(Qt.Unchecked)
+            item = super().cellWidget(i, 0).getCheckBox()
+            item.setChecked(state)
 
     def getCheckedRows(self):
         return self.__getCheckedStateOfRows(Qt.Checked)
@@ -110,6 +114,9 @@ class CheckBoxTableWidget(QTableWidget):
                 flag_lst.append(i)
 
         return flag_lst
+
+    def setCheckedAt(self, idx, f):
+        self.cellWidget(idx, 0).setChecked(f)
 
     def removeCheckedRows(self):
         self.__removeCertainCheckedStateRows(Qt.Checked)
@@ -166,7 +173,7 @@ class SettingsDialog(QDialog):
                 # todo make it enable to version check of each langs and update
                 btn.setDisabled(True)
                 if self.__langs_test_available_dict[langName]:
-                    self.__langTableWidget.cellWidget(i, 0).layout().itemAt(0).widget().setChecked(True)
+                    self.__langTableWidget.setCheckedAt(i, True)
             else:
                 btn.setText('Install')
             self.__langTableWidget.setCellWidget(i, 2, btn)
