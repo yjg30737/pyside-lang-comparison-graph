@@ -184,11 +184,14 @@ class SettingsDialog(QDialog):
         langGrpBox.setLayout(lay)
 
         setTimeOutCheckBox = QCheckBox('Set Timeout')
-        timeOutSpinBox = QSpinBox()
+        setTimeOutCheckBox.toggled.connect(self.__toggleTimeOutSpinBox)
+        self.__timeOutSpinBox = QSpinBox()
+        self.__timeOutSpinBox.setRange(1, 100)
+        self.__toggleTimeOutSpinBox(False)
 
         lay = QVBoxLayout()
         lay.addWidget(setTimeOutCheckBox)
-        lay.addWidget(timeOutSpinBox)
+        lay.addWidget(self.__timeOutSpinBox)
         lay.setAlignment(Qt.AlignTop)
 
         testGrpBox = QGroupBox()
@@ -222,12 +225,8 @@ class SettingsDialog(QDialog):
 
         self.setLayout(lay)
 
-    def accept(self) -> None:
-        super().accept()
-        self.__setLangsDict()
-        dict = self.getLangsDict()
-        for k, v in dict.items():
-            self.__settingsStruct.setValue(k, v)
+    def __toggleTimeOutSpinBox(self, f):
+        self.__timeOutSpinBox.setEnabled(f)
 
     def __setLangsDict(self):
         checked_langs_lst = [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]
@@ -238,3 +237,10 @@ class SettingsDialog(QDialog):
                 self.__langs_test_available_dict[k] = 0
     def getLangsDict(self):
         return self.__langs_test_available_dict
+
+    def accept(self) -> None:
+        super().accept()
+        self.__setLangsDict()
+        dict = self.getLangsDict()
+        for k, v in dict.items():
+            self.__settingsStruct.setValue(k, v)
