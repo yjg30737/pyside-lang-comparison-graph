@@ -193,13 +193,8 @@ class SettingsDialog(QDialog):
         langGrpBox.setTitle('Select Languages to Test')
         langGrpBox.setLayout(lay)
 
-        testGrpBox = QGroupBox()
-        testGrpBox.setTitle('Test Settings')
-        testGrpBox.setLayout(lay)
-
         lay = QHBoxLayout()
         lay.addWidget(langGrpBox)
-        lay.addWidget(testGrpBox)
 
         topWidget = QWidget()
         topWidget.setLayout(lay)
