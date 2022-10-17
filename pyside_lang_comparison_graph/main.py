@@ -135,9 +135,6 @@ class UsageMonitorThread(QThread):
             print('CPU usage:', psutil.cpu_percent())
             print('MEM usage:', psutil.virtual_memory().percent)
 
-    def isPaused(self):
-        return self.__paused
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -381,7 +378,6 @@ class MainWindow(QMainWindow):
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
-        self.__stopBtn.setEnabled(False)
         if self.__isTestFinished():
             self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
