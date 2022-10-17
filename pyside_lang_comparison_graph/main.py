@@ -126,13 +126,17 @@ class UsageMonitorThread(QThread):
 
     def run(self) -> None:
         while True:
-            if self.__stopped:
+            if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
             if self.__paused:
                 self.__pauseCondition.wait(self.__mutex)
+
             print('CPU usage:', psutil.cpu_percent())
             print('MEM usage:', psutil.virtual_memory().percent)
+
+    def isPaused(self):
+        return self.__paused
 
 
 class MainWindow(QMainWindow):
@@ -317,7 +321,6 @@ class MainWindow(QMainWindow):
         self.__testThread.started.connect(self.__prepareLogBrowser)
         self.__testThread.updated.connect(self.__updateLog)
         self.__testThread.finished.connect(self.__handleTestFinished)
-        self.__testThread.finished.connect(self.__setChart)
         self.__testThread.start()
 
     def __prepareLogBrowser(self):
@@ -369,7 +372,7 @@ class MainWindow(QMainWindow):
         self.__stopBtn.setEnabled(True)
         self.__usageMoniterThread.start()
 
-    def __isTestNotStopped(self):
+    def __isTestFinished(self):
         return self.__usageMoniterThread.isRunning()
 
     # enable the button after test is over
@@ -379,10 +382,11 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(True)
         self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
-        if self.__isTestNotStopped():
+        if self.__isTestFinished():
             self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
             self.__updateLog('Finished!', QColor(0, 0, 0), QApplication.font())
+            self.__setChart()
         else:
             self.__logLbl.setText('Stopped')
 
