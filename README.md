@@ -7,6 +7,8 @@ You can see the real-time log while running the test, pause/resume, stop the tes
 
 You cannot close the app while test is running or paused. If you want to close the app during test, you can do it after clicking stop button or with task manager forcefully.
 
+You can set the timeout if you want. Not quite recommended, it is incorrect for some reasons.
+
 You can save it as png, jpg, pdf file.
 
 See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">here</a> for detail about performance test
@@ -32,4 +34,4 @@ See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">h
 
 ## Preview
 
-![image](https://user-images.githubusercontent.com/55078043/196018097-f57c4d89-3d73-4a61-ab4f-204366dfd57e.png)
+![image](https://user-images.githubusercontent.com/55078043/196132830-3bbeb2f9-7c70-4100-9cd1-b914d80ed57c.png)
