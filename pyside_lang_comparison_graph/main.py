@@ -435,35 +435,38 @@ class MainWindow(QMainWindow):
                 self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
     def __setChart(self):
-        self.__tableWidget.clearContents()
-        lst = []
-        for res in self.__res_lst:
-            fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', res)
-            for f in fs:
-                k, v = f
-                lst.append([k, float(v)])
+        try:
+            self.__tableWidget.clearContents()
+            lst = []
+            for res in self.__res_lst:
+                fs = re.findall(r'([\w]+):\s([\d\\.]+)\sseconds', res)
+                for f in fs:
+                    k, v = f
+                    lst.append([k, float(v)])
 
-        lst = sorted(lst, key=operator.itemgetter(1))
-        barSet = self.__series.barSets()[0]
-        barSet.remove(0, barSet.count())
-        langs = [item[0] for item in lst]
+            lst = sorted(lst, key=operator.itemgetter(1))
+            barSet = self.__series.barSets()[0]
+            barSet.remove(0, barSet.count())
+            langs = [item[0] for item in lst]
 
-        self.__axisX.clear()
-        self.__axisX.append(langs)
-        self.__axisY.setRange(0, max([float(item[1]) for item in lst]))
+            self.__axisX.clear()
+            self.__axisX.append(langs)
+            self.__axisY.setRange(0, max([float(item[1]) for item in lst]))
 
-        self.__tableWidget.setRowCount(len(langs))
-        self.__tableWidget.setVerticalHeaderLabels(langs)
+            self.__tableWidget.setRowCount(len(langs))
+            self.__tableWidget.setVerticalHeaderLabels(langs)
 
-        for i in range(len(lst)):
-            v = lst[i][1]
-            barSet <<= float(v)
-            item = QTableWidgetItem(str(v))
-            item.setTextAlignment(Qt.AlignCenter)
-            self.__tableWidget.setItem(i, 0, item)
+            for i in range(len(lst)):
+                v = lst[i][1]
+                barSet <<= float(v)
+                item = QTableWidgetItem(str(v))
+                item.setTextAlignment(Qt.AlignCenter)
+                self.__tableWidget.setItem(i, 0, item)
 
-        self.__axisX.setTitleText('Language')
-        self.__axisY.setTitleText('Seconds')
+            self.__axisX.setTitleText('Language')
+            self.__axisY.setTitleText('Seconds')
+        except Exception as e:
+            pass
 
     def __save(self):
         filename = QFileDialog.getSaveFileName(self, 'Save', '.', 'PNG (*.png);; '
