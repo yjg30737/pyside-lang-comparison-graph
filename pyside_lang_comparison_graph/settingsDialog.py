@@ -156,7 +156,7 @@ class SettingsDialog(QDialog):
         # [Test]
         self.__settingsStruct.beginGroup('Test')
         self.__timeoutEnabled = self.__settingsStruct.value('TimeoutEnabled')
-        self.__timeoutSeconds = self.__settingsStruct.value('TimeoutSeconds')
+        self.__timeoutSeconds = int(self.__settingsStruct.value('TimeoutSeconds'))
         self.__settingsStruct.endGroup()
 
     def __initUi(self):

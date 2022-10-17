@@ -26,17 +26,24 @@ class TestThread(QThread):
     # QColor is color of text
     # QFont is font of text
     updated = Signal(str, QColor, QFont)
+    curTestFinished = Signal()
 
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
+        # thread control variable
         self.__mutex = QMutex()
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
         self.__stopped = False
+        self.__stoppedCurrentTest = False
+
         # process
         self.__p = ''
 
+        # number of calculation
         self.__n = n
+
+        # variable which are related to languages
         self.__langs_test_available_dict = langs_test_available_dict
         self.__command_dict = {
             'Python': ['python', 'a.py'],
@@ -47,6 +54,13 @@ class TestThread(QThread):
         }
         self.__res_lst = res_lst
         self.__res_lst.clear()
+
+        # timeout
+        self.__timeoutSeconds = 0
+
+        # common font to emphasize the log about start/finish/timeout
+        self.__fnt = QFont('Arial', 10)
+        self.__fnt.setBold(True)
 
     def pause(self):
         self.__mutex.lock()
@@ -63,6 +77,11 @@ class TestThread(QThread):
         if self.__paused:
             self.resume()
         self.__stopped = True
+    
+    # stop current language's test
+    def stopCurrentLangTest(self, n):
+        self.__stoppedCurrentTest = True
+        self.__timeoutSeconds = n
 
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
@@ -74,26 +93,34 @@ class TestThread(QThread):
                                      encoding='utf-8',
                                      errors='replace'
                                      )
-                # log which indicates the certain language's test started with dark-green color and emphasized font
-                fnt = QFont('Arial', 10)
-                fnt.setBold(True)
-                self.updated.emit(f"{'='*5} {k} {'='*5}", QColor(0, 155, 0), fnt)
+                self.updated.emit(f"{k} Test Started!", QColor(0, 155, 0), self.__fnt)
                 while True:
                     # stop
                     if self.__stopped:
-                        self.updated.emit(f"Test Stopped", QColor(155, 0, 0), fnt)
+                        self.updated.emit(f"Test Stopped", QColor(155, 0, 0), self.__fnt)
                         self.__stopped = False
                         return
                     # pause
                     if self.__paused:
                         self.__pauseCondition.wait(self.__mutex)
                     realtime_output = self.__p.stdout.readline()
-                    if realtime_output == '' and self.__p.poll() is not None:
+                    if realtime_output == '' and self.__p.poll() is not None or self.__stoppedCurrentTest:
                         break
                     if realtime_output:
                         # log with default color and text
                         self.updated.emit(realtime_output.strip(), QColor(0, 0, 0), QApplication.font())
                     self.__res_lst.append(realtime_output)
+                if self.__stoppedCurrentTest:
+                    self.__curLangTestTimedOut(k)
+                else:
+                    self.__curLangTestFinished(k)
+
+    def __curLangTestTimedOut(self, k):
+        self.updated.emit(f"{k} test timed out - exceeds {self.__timeoutSeconds} seconds.", QColor(200, 0, 0), self.__fnt)
+        self.__stoppedCurrentTest = False
+    def __curLangTestFinished(self, k):
+        self.curTestFinished.emit()
+        self.updated.emit(f'{k} Test Finished!', QColor(0, 0, 200), self.__fnt)
 
     def currentProcessPid(self):
         return self.__p.pid
@@ -101,13 +128,14 @@ class TestThread(QThread):
 
 
 class TestMonitorThread(QThread):
-    timeElapsed = Signal()
+    timeElapsed = Signal(int)
     def __init__(self, seconds=None):
         super().__init__()
         self.__mutex = QMutex()
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
         self.__stopped = False
+        self.__resetFlag = False
         self.__timeoutSeconds = seconds
 
     def pause(self):
@@ -131,13 +159,13 @@ class TestMonitorThread(QThread):
     def run(self) -> None:
         start_time = time.time()
         while True:
-            # elapsed_time = time.time()
-            # print(abs(elapsed_time-start_time))
-            # if self.__timeoutSeconds:
-            #     if abs(elapsed_time-start_time) == self.__timeoutSeconds:
-            #         self.timeElapsed.emit()
-            #         print('Good!')
-
+            elapsed_time = time.time()
+            if self.__timeoutSeconds:
+                if int(abs(elapsed_time-start_time)) == self.__timeoutSeconds or self.__resetFlag:
+                    if self.__resetFlag:
+                        self.__resetFlag = False
+                    start_time = time.time()
+                    self.timeElapsed.emit(self.__timeoutSeconds)
             if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
@@ -146,6 +174,9 @@ class TestMonitorThread(QThread):
 
             # print('CPU usage:', psutil.cpu_percent())
             # print('MEM usage:', psutil.virtual_memory().percent)
+
+    def resetTime(self):
+        self.__resetFlag = True
 
 
 class MainWindow(QMainWindow):
@@ -173,8 +204,10 @@ class MainWindow(QMainWindow):
         self.__settingsStruct.endGroup()
 
         # [Test]
-        self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
-        self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
+        self.__settingsStruct.beginGroup('Test')
+        self.__timeoutEnabled = self.__settingsStruct.value('TimeoutEnabled')
+        self.__timeoutSeconds = int(self.__settingsStruct.value('TimeoutSeconds'))
+        self.__settingsStruct.endGroup()
 
     def __initUi(self):
         self.setWindowTitle('Language Comparison')
@@ -333,9 +366,14 @@ class MainWindow(QMainWindow):
         # if timeout is available, give timeout to thread
         # None means that it doesn't use timeout feature
         seconds = self.__timeoutSeconds if self.__timeoutEnabled else None
+        
         self.__usageMoniterThread = TestMonitorThread(seconds)
-
+        
         self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
+
+        self.__testThread.curTestFinished.connect(self.__usageMoniterThread.resetTime)
+        self.__usageMoniterThread.timeElapsed.connect(self.__testThread.stopCurrentLangTest)
+        
         self.__testThread.started.connect(self.__handleTestStarted)
         self.__testThread.started.connect(self.__prepareLogBrowser)
         self.__testThread.updated.connect(self.__updateLog)
