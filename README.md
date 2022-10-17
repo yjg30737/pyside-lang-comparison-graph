@@ -3,7 +3,7 @@ Execute R, Go, Python, Rust, Julia performance test and show result with PySide 
 
 If you don't want to test all of them, you can choose some of those languages to test from "Settings".
 
-You can see the real-time log while running the test, pause/resume, stop the test.
+You can see the real-time log (which is colorful) while running the test, pause/resume, stop the test.
 
 You cannot close the app while test is running or paused. If you want to close the app during test, you can do it after clicking stop button or with task manager forcefully.
 
