@@ -161,9 +161,10 @@ class TestMonitorThread(QThread):
         while True:
             elapsed_time = time.time()
             if self.__timeoutSeconds:
-                if int(abs(elapsed_time-start_time)) == self.__timeoutSeconds or self.__resetFlag:
-                    if self.__resetFlag:
-                        self.__resetFlag = False
+                if self.__resetFlag:
+                    start_time = time.time()
+                    self.__resetFlag = False
+                if int(abs(elapsed_time-start_time)) == self.__timeoutSeconds:
                     start_time = time.time()
                     self.timeElapsed.emit(self.__timeoutSeconds)
             if self.__stopped or psutil.cpu_percent() > 100 or psutil.virtual_memory().percent > 100:
