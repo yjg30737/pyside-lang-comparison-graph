@@ -55,10 +55,7 @@ class TestThread(QThread):
         self.__res_lst = res_lst
         self.__res_lst.clear()
 
-        # timeout
-        self.__timeoutSeconds = 0
-
-        # common font to emphasize the log about start/finish/timeout
+        # common font to emphasize the log about start/finish
         self.__fnt = QFont('Arial', 10)
         self.__fnt.setBold(True)
 
@@ -81,7 +78,6 @@ class TestThread(QThread):
     # stop current language's test
     def stopCurrentLangTest(self, n):
         self.__stoppedCurrentTest = True
-        self.__timeoutSeconds = n
 
     def run(self):
         for k, v in self.__langs_test_available_dict.items():
@@ -116,10 +112,6 @@ class TestThread(QThread):
                 else:
                     self.__curLangTestFinished(k)
 
-    def __curLangTestTimedOut(self, k):
-        self.updated.emit(f"{k} test timed out - exceeds {self.__timeoutSeconds} seconds.", QColor(200, 0, 0), self.__fnt)
-        self.__stoppedCurrentTest = False
-
     def __curLangTestFinished(self, k):
         self.curTestFinished.emit()
         self.updated.emit(f'{k} Test Finished!', QColor(0, 0, 200), self.__fnt)
@@ -130,14 +122,13 @@ class TestThread(QThread):
 
 class TestMonitorThread(QThread):
     timeElapsed = Signal(int)
-    def __init__(self, seconds=None):
+
+    def __init__(self):
         super().__init__()
         self.__mutex = QMutex()
         self.__pauseCondition = QWaitCondition()
         self.__paused = False
         self.__stopped = False
-        self.__resetFlag = False
-        self.__timeoutSeconds = seconds
 
     def pause(self):
         self.__mutex.lock()
@@ -158,16 +149,7 @@ class TestMonitorThread(QThread):
         self.__stopped = True
 
     def run(self) -> None:
-        start_time = time.time()
         while True:
-            elapsed_time = time.time()
-            if self.__timeoutSeconds:
-                if self.__resetFlag:
-                    start_time = time.time()
-                    self.__resetFlag = False
-                if int(abs(elapsed_time-start_time)) == self.__timeoutSeconds:
-                    start_time = time.time()
-                    self.timeElapsed.emit(self.__timeoutSeconds)
             if self.__stopped or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
@@ -200,12 +182,6 @@ class MainWindow(QMainWindow):
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
-        self.__settingsStruct.endGroup()
-
-        # [Test]
-        self.__settingsStruct.beginGroup('Test')
-        self.__timeoutEnabled = self.__settingsStruct.value('TimeoutEnabled')
-        self.__timeoutSeconds = int(self.__settingsStruct.value('TimeoutSeconds'))
         self.__settingsStruct.endGroup()
 
     def __initUi(self):
@@ -361,12 +337,8 @@ class MainWindow(QMainWindow):
 
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
-
-        # if timeout is available, give timeout to thread
-        # None means that it doesn't use timeout feature
-        seconds = self.__timeoutSeconds if self.__timeoutEnabled else None
         
-        self.__usageMoniterThread = TestMonitorThread(seconds)
+        self.__usageMoniterThread = TestMonitorThread()
         
         self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
 

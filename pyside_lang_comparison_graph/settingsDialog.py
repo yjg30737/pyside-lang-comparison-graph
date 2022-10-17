@@ -141,8 +141,6 @@ class SettingsDialog(QDialog):
     def __initVal(self):
         self.__langs_test_available_dict = {}
         self.__langs_app_dict = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
-        self.__timeoutEnabled = False
-        self.__timeoutSeconds = 0
 
     def __initSettings(self):
         # [Languages]
@@ -151,12 +149,6 @@ class SettingsDialog(QDialog):
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
-        self.__settingsStruct.endGroup()
-
-        # [Test]
-        self.__settingsStruct.beginGroup('Test')
-        self.__timeoutEnabled = int(self.__settingsStruct.value('TimeoutEnabled'))
-        self.__timeoutSeconds = int(self.__settingsStruct.value('TimeoutSeconds'))
         self.__settingsStruct.endGroup()
 
     def __initUi(self):
@@ -201,21 +193,6 @@ class SettingsDialog(QDialog):
         langGrpBox.setTitle('Select Languages to Test')
         langGrpBox.setLayout(lay)
 
-        self.__timeOutSpinBox = QSpinBox()
-        self.__timeOutSpinBox.setRange(1, 100)
-        self.__timeOutSpinBox.setValue(int(self.__timeoutSeconds))
-
-        self.__setTimeOutCheckBox = QCheckBox('Set Timeout')
-        self.__setTimeOutCheckBox.toggled.connect(self.__toggleTimeOutSpinBox)
-        self.__setTimeOutCheckBox.setChecked(bool(self.__timeoutEnabled))
-
-        self.__toggleTimeOutSpinBox(self.__setTimeOutCheckBox.isChecked())
-
-        lay = QVBoxLayout()
-        lay.addWidget(self.__setTimeOutCheckBox)
-        lay.addWidget(self.__timeOutSpinBox)
-        lay.setAlignment(Qt.AlignTop)
-
         testGrpBox = QGroupBox()
         testGrpBox.setTitle('Test Settings')
         testGrpBox.setLayout(lay)
@@ -229,6 +206,11 @@ class SettingsDialog(QDialog):
 
         self.__okBtn = QPushButton('OK')
         self.__okBtn.clicked.connect(self.accept)
+
+        # when nothing is checked
+        # which means test can't be executed
+        # make okBtn disabled
+        self.__langTableWidget.checkedSignal.connect(self.__checked)
 
         closeBtn = QPushButton('Close')
         closeBtn.clicked.connect(self.close)
@@ -247,8 +229,10 @@ class SettingsDialog(QDialog):
 
         self.setLayout(lay)
 
-    def __toggleTimeOutSpinBox(self, f):
-        self.__timeOutSpinBox.setEnabled(f)
+    def __checked(self, i, state):
+        rows = self.__langTableWidget.getCheckedRows()
+        self.__okBtn.setEnabled(len(rows) >= 1)
+
 
     def __setLangsDict(self):
         checked_langs_lst = [self.__langTableWidget.item(i, 1).text() for i in self.__langTableWidget.getCheckedRows()]
@@ -266,7 +250,3 @@ class SettingsDialog(QDialog):
         dict = self.getLangsDict()
         for k, v in dict.items():
             self.__settingsStruct.setValue(k, v)
-        self.__settingsStruct.beginGroup('Test')
-        self.__settingsStruct.setValue('TimeoutEnabled', int(self.__setTimeOutCheckBox.isChecked()))
-        self.__settingsStruct.setValue('TimeoutSeconds', self.__timeOutSpinBox.value())
-        self.__settingsStruct.endGroup()
