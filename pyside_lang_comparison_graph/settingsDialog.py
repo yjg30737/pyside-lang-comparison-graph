@@ -141,12 +141,21 @@ class SettingsDialog(QDialog):
     def __initVal(self):
         self.__langs_test_available_dict = {}
         self.__langs_app_dict = {'Python': 'python', 'R': 'r', 'Go': 'go', 'Rust': 'rustc', 'Julia': 'julia'}
+        self.__timeoutEnabled = False
+        self.__timeoutSeconds = 0
 
     def __initSettings(self):
+        # ini - general
         self.__settingsStruct = QSettings('settings.ini', QSettings.IniFormat)
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
             self.__langs_test_available_dict[k] = v
+
+        # ini - test
+        self.__timeoutEnabled = self.__settingsStruct.value('Test/TimeoutEnabled')
+        self.__timeoutSeconds = self.__settingsStruct.value('Test/TimeoutSeconds')
+
+        print(self.__timeoutEnabled, self.__timeoutSeconds)
 
     def __initUi(self):
         self.setWindowTitle('Settings')
@@ -180,7 +189,7 @@ class SettingsDialog(QDialog):
 
         allChkBox = QCheckBox('Check All')
         allChkBox.stateChanged.connect(self.__langTableWidget.toggleState)
-        allChkBox.setChecked(True)
+        allChkBox.setChecked(len(self.__langTableWidget.getCheckedRows()) == 5)
 
         lay = QVBoxLayout()
         lay.addWidget(allChkBox)
@@ -190,14 +199,18 @@ class SettingsDialog(QDialog):
         langGrpBox.setTitle('Select Languages to Test')
         langGrpBox.setLayout(lay)
 
-        setTimeOutCheckBox = QCheckBox('Set Timeout')
-        setTimeOutCheckBox.toggled.connect(self.__toggleTimeOutSpinBox)
         self.__timeOutSpinBox = QSpinBox()
         self.__timeOutSpinBox.setRange(1, 100)
-        self.__toggleTimeOutSpinBox(False)
+        self.__timeOutSpinBox.setValue(int(self.__timeoutSeconds))
+
+        self.__setTimeOutCheckBox = QCheckBox('Set Timeout')
+        self.__setTimeOutCheckBox.toggled.connect(self.__toggleTimeOutSpinBox)
+        self.__setTimeOutCheckBox.setChecked(bool(self.__timeoutEnabled))
+
+        self.__toggleTimeOutSpinBox(self.__setTimeOutCheckBox.isChecked())
 
         lay = QVBoxLayout()
-        lay.addWidget(setTimeOutCheckBox)
+        lay.addWidget(self.__setTimeOutCheckBox)
         lay.addWidget(self.__timeOutSpinBox)
         lay.setAlignment(Qt.AlignTop)
 
@@ -251,3 +264,5 @@ class SettingsDialog(QDialog):
         dict = self.getLangsDict()
         for k, v in dict.items():
             self.__settingsStruct.setValue(k, v)
+        self.__settingsStruct.setValue('Test/TimeoutEnabled', int(self.__setTimeOutCheckBox.isChecked()))
+        self.__settingsStruct.setValue('Test/TimeoutSeconds', self.__timeOutSpinBox.value())
