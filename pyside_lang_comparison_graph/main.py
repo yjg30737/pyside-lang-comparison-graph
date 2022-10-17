@@ -98,7 +98,7 @@ class TestThread(QThread):
 
 
 
-class UsageMonitorThread(QThread):
+class TestMonitorThread(QThread):
     def __init__(self):
         super().__init__()
         self.__mutex = QMutex()
@@ -311,7 +311,7 @@ class MainWindow(QMainWindow):
     def __run(self):
         n = self.__timesLineEdit.text().replace(',', '')
 
-        self.__usageMoniterThread = UsageMonitorThread()
+        self.__usageMoniterThread = TestMonitorThread()
 
         self.__testThread = TestThread(n, self.__langs_test_available_dict, self.__res_lst)
         self.__testThread.started.connect(self.__handleTestStarted)
