@@ -1,7 +1,7 @@
 import shutil
 
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QCheckBox, QVBoxLayout, QPushButton, QTableWidgetItem, \
-    QAbstractItemView, QLabel
+    QAbstractItemView, QLabel, QGroupBox, QSpinBox
 
 import typing
 
@@ -87,7 +87,6 @@ class CheckBoxTableWidget(QTableWidget):
         self.checkedSignal.emit(r_idx, flag)
 
     def toggleState(self, state):
-        print(state)
         for i in range(self.rowCount()):
             item = super().cellWidget(i, 0).layout().itemAt(0).widget()
             if int(item.checkState()) != state:
@@ -177,9 +176,28 @@ class SettingsDialog(QDialog):
         allChkBox.setChecked(True)
 
         lay = QVBoxLayout()
-        lay.addWidget(QLabel('Select Languages to Test'))
         lay.addWidget(allChkBox)
         lay.addWidget(self.__langTableWidget)
+
+        langGrpBox = QGroupBox()
+        langGrpBox.setTitle('Select Languages to Test')
+        langGrpBox.setLayout(lay)
+
+        setTimeOutCheckBox = QCheckBox('Set Timeout')
+        timeOutSpinBox = QSpinBox()
+
+        lay = QVBoxLayout()
+        lay.addWidget(setTimeOutCheckBox)
+        lay.addWidget(timeOutSpinBox)
+        lay.setAlignment(Qt.AlignTop)
+
+        testGrpBox = QGroupBox()
+        testGrpBox.setTitle('Test Settings')
+        testGrpBox.setLayout(lay)
+
+        lay = QHBoxLayout()
+        lay.addWidget(langGrpBox)
+        lay.addWidget(testGrpBox)
 
         topWidget = QWidget()
         topWidget.setLayout(lay)
