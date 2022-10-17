@@ -2,7 +2,6 @@ import os
 import signal
 import subprocess
 import operator
-import time
 
 import psutil
 from psutil._common import bytes2human
