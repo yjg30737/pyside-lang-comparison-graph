@@ -355,12 +355,12 @@ class MainWindow(QMainWindow):
         self.__timesLineEdit.setEnabled(True)
         self.__runTestBtn.setEnabled(True)
         self.__settingsBtn.setEnabled(True)
-        self.__saveBtn.setEnabled(True)
         self.__stopBtn.setEnabled(False)
         if self.__isTestFinished():
             self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
             self.__updateLog('Finished!', QColor(0, 0, 0), QApplication.font())
+            self.__saveBtn.setEnabled(True)
             self.__setChart()
         else:
             self.__logLbl.setText('Stopped')
