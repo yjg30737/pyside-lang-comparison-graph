@@ -414,8 +414,13 @@ class MainWindow(QMainWindow):
             self.__axisY.setTitleText('Seconds')
 
             totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()}')
+            lay = QVBoxLayout()
+            lay.addWidget(totalLbl)
+            resultInfoWidget = QWidget()
+            resultInfoWidget.setLayout(lay)
+            resultInfoWidget.setStyleSheet('QWidget { background-color: transparent; }')
             scene = self.__chartView.scene()
-            scene.addWidget(totalLbl)
+            scene.addWidget(resultInfoWidget)
             self.__chartView.setScene(scene)
         except Exception as e:
             pass
