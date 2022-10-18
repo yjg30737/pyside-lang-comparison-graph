@@ -34,4 +34,4 @@ See <a href="https://github.com/yjg30737/high-performance-lang-comparison.git">h
 
 ## Preview
 
-![image](https://user-images.githubusercontent.com/55078043/196132830-3bbeb2f9-7c70-4100-9cd1-b914d80ed57c.png)
+![image](https://user-images.githubusercontent.com/55078043/196308482-11a21203-869f-4b2c-bc7b-60fa9ee6566d.png)
