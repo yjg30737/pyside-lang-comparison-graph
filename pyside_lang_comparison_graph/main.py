@@ -410,6 +410,11 @@ class MainWindow(QMainWindow):
 
             self.__axisX.setTitleText('Language')
             self.__axisY.setTitleText('Seconds')
+
+            totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()}')
+            scene = self.__chartView.scene()
+            totalLblGraphicsWidget = scene.addWidget(totalLbl)
+            self.__chartView.setScene(scene)
         except Exception as e:
             pass
 
