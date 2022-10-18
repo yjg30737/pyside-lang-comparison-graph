@@ -30,9 +30,6 @@ class TestThread(QThread):
     def __init__(self, n, langs_test_available_dict: dict, res_lst: list):
         super().__init__()
         # thread control variable
-        self.__mutex = QMutex()
-        self.__pauseCondition = QWaitCondition()
-        self.__paused = False
         self.__stopped = False
         self.__stoppedCurrentTest = False
 
@@ -58,21 +55,7 @@ class TestThread(QThread):
         self.__fnt = QFont('Arial', 10)
         self.__fnt.setBold(True)
 
-    def pause(self):
-        # todo fix the second lock make app freeze
-        self.__mutex.lock()
-        self.__paused = True
-        self.__mutex.unlock()
-
-    def resume(self):
-        self.__mutex.lock()
-        self.__paused = False
-        self.__mutex.unlock()
-        self.__pauseCondition.wakeAll()
-
     def stop(self):
-        if self.__paused:
-            self.resume()
         self.__stopped = True
     
     # stop current language's test
@@ -97,9 +80,6 @@ class TestThread(QThread):
                         self.updated.emit(f"Test Stopped", QColor(155, 0, 0), self.__fnt)
                         self.__stopped = False
                         return
-                    # pause
-                    if self.__paused:
-                        self.__pauseCondition.wait(self.__mutex)
                     realtime_output = self.__p.stdout.readline()
                     if realtime_output == '' and self.__p.poll() is not None or self.__stoppedCurrentTest:
                         break
@@ -126,24 +106,9 @@ class TestMonitorThread(QThread):
     def __init__(self):
         super().__init__()
         self.__mutex = QMutex()
-        self.__pauseCondition = QWaitCondition()
-        self.__paused = False
         self.__stopped = False
 
-    def pause(self):
-        self.__mutex.lock()
-        self.__paused = True
-        self.__mutex.unlock()
-
-    def resume(self):
-        self.__mutex.lock()
-        self.__paused = False
-        self.__mutex.unlock()
-        self.__pauseCondition.wakeAll()
-
     def stop(self, pid=None):
-        if self.__paused:
-            self.resume()
         if pid:
             os.kill(pid, signal.SIGINT)
         self.__stopped = True
@@ -153,8 +118,6 @@ class TestMonitorThread(QThread):
             if self.__stopped or psutil.virtual_memory().percent > 100:
                 self.__stopped = False
                 return
-            if self.__paused:
-                self.__pauseCondition.wait(self.__mutex)
 
     def resetTime(self):
         self.__resetFlag = True
@@ -251,13 +214,10 @@ class MainWindow(QMainWindow):
         self.__logLbl.setText('Running the test...')
         self.__logBrowser = QTextBrowser()
 
-        self.__pauseBtn = QPushButton('Pause')
-        self.__pauseBtn.clicked.connect(self.__testPauseToggle)
         self.__stopBtn = QPushButton('Stop')
         self.__stopBtn.clicked.connect(self.__stop)
 
         lay = QHBoxLayout()
-        lay.addWidget(self.__pauseBtn)
         lay.addWidget(self.__stopBtn)
         lay.setContentsMargins(0, 0, 0, 0)
         btnWidget = QWidget()
@@ -370,18 +330,6 @@ class MainWindow(QMainWindow):
         vBar = self.__logBrowser.verticalScrollBar()
         vBar.setValue(vBar.maximum())
 
-    def __testPauseToggle(self):
-        if self.__pauseBtn.text() == 'Pause':
-            self.__logLbl.setText('Test paused')
-            self.__pauseBtn.setText('Resume')
-            self.__testThread.pause()
-            self.__usageMoniterThread.pause()
-        elif self.__pauseBtn.text() == 'Resume':
-            self.__logLbl.setText('Running the test...')
-            self.__pauseBtn.setText('Pause')
-            self.__testThread.resume()
-            self.__usageMoniterThread.resume()
-
     def __stop(self):
         self.__testThread.stop()
         pid = self.__testThread.currentProcessPid()
@@ -395,8 +343,6 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(False)
         self.__settingsBtn.setEnabled(False)
         self.__saveBtn.setEnabled(False)
-        self.__pauseBtn.setEnabled(True)
-        self.__pauseBtn.setText('Pause')
         self.__stopBtn.setEnabled(True)
         self.__usageMoniterThread.start()
 
@@ -408,7 +354,6 @@ class MainWindow(QMainWindow):
         self.__runTestBtn.setEnabled(True)
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
-        self.__pauseBtn.setEnabled(False)
         self.__stopBtn.setEnabled(False)
         if self.__isTestFinished():
             self.__logLbl.setText('Finished')
