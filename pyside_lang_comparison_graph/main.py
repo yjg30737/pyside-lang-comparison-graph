@@ -10,7 +10,7 @@ from num2words import num2words
 import platform
 
 from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarCategoryAxis, QBarSet, QValueAxis
-from PySide6.QtCore import QThread, QSettings, Signal, QMutex, QWaitCondition
+from PySide6.QtCore import QThread, QSettings, Signal
 from PySide6.QtGui import QPainter, QRegularExpressionValidator, Qt, QPdfWriter, QPixmap, QColor, QTextCursor, \
     QTextCharFormat, QBrush, QFont
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QSizePolicy, QPushButton, \
@@ -105,7 +105,6 @@ class TestMonitorThread(QThread):
 
     def __init__(self):
         super().__init__()
-        self.__mutex = QMutex()
         self.__stopped = False
 
     def stop(self, pid=None):
