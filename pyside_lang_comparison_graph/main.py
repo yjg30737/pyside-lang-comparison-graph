@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
             self.__axisX.setTitleText('Language')
             self.__axisY.setTitleText('Seconds')
 
-            totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()}')
+            totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
             lay = QVBoxLayout()
             lay.addWidget(totalLbl)
             resultInfoWidget = QWidget()
