@@ -346,6 +346,7 @@ class MainWindow(QMainWindow):
         self.__saveBtn.setEnabled(False)
         self.__stopBtn.setEnabled(True)
         self.__usageMoniterThread.start()
+        self.__axisX.clear()
 
     def __isTestFinished(self):
         return self.__usageMoniterThread.isRunning()
@@ -360,8 +361,8 @@ class MainWindow(QMainWindow):
             self.__logLbl.setText('Finished')
             self.__usageMoniterThread.stop()
             self.__updateLog('Finished!', QColor(0, 0, 0), QApplication.font())
-            self.__saveBtn.setEnabled(True)
             self.__setChart()
+            self.__saveBtn.setEnabled(True)
         else:
             self.__logLbl.setText('Stopped')
 
@@ -423,7 +424,7 @@ class MainWindow(QMainWindow):
             scene.addWidget(resultInfoWidget)
             self.__chartView.setScene(scene)
         except Exception as e:
-            pass
+            print(e)
 
     def __save(self):
         filename = QFileDialog.getSaveFileName(self, 'Save', '.', 'PNG (*.png);; '
