@@ -340,6 +340,7 @@ class MainWindow(QMainWindow):
         self.__t_deleted = False
         # disable the button when running in order to prevent error
         self.__logLbl.setText('Running the test...')
+        self.__timesLineEdit.setEnabled(False)
         self.__runTestBtn.setEnabled(False)
         self.__settingsBtn.setEnabled(False)
         self.__saveBtn.setEnabled(False)
@@ -351,6 +352,7 @@ class MainWindow(QMainWindow):
 
     # enable the button after test is over
     def __handleTestFinished(self):
+        self.__timesLineEdit.setEnabled(True)
         self.__runTestBtn.setEnabled(True)
         self.__settingsBtn.setEnabled(True)
         self.__saveBtn.setEnabled(True)
@@ -413,7 +415,7 @@ class MainWindow(QMainWindow):
 
             totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()}')
             scene = self.__chartView.scene()
-            totalLblGraphicsWidget = scene.addWidget(totalLbl)
+            scene.addWidget(totalLbl)
             self.__chartView.setScene(scene)
         except Exception as e:
             pass
