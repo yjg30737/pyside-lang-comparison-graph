@@ -382,6 +382,17 @@ class MainWindow(QMainWindow):
                 reduced_n_text = n-(n % pow(10, len(str(n))-2))
                 self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
+    def __setResultInfoWidgetOnChart(self):
+        totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
+        lay = QVBoxLayout()
+        lay.addWidget(totalLbl)
+        resultInfoWidget = QWidget()
+        resultInfoWidget.setLayout(lay)
+        resultInfoWidget.setStyleSheet('QWidget { background-color: transparent; }')
+        scene = self.__chartView.scene()
+        scene.addWidget(resultInfoWidget)
+        self.__chartView.setScene(scene)
+
     def __setChart(self):
         try:
             self.__tableWidget.clearContents()
@@ -414,15 +425,8 @@ class MainWindow(QMainWindow):
             self.__axisX.setTitleText('Language')
             self.__axisY.setTitleText('Seconds')
 
-            totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
-            lay = QVBoxLayout()
-            lay.addWidget(totalLbl)
-            resultInfoWidget = QWidget()
-            resultInfoWidget.setLayout(lay)
-            resultInfoWidget.setStyleSheet('QWidget { background-color: transparent; }')
-            scene = self.__chartView.scene()
-            scene.addWidget(resultInfoWidget)
-            self.__chartView.setScene(scene)
+            self.__setResultInfoWidgetOnChart()
+
         except Exception as e:
             print(e)
 
