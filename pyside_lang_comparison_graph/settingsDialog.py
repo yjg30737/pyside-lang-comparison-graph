@@ -148,6 +148,7 @@ class SettingsDialog(QDialog):
         self.__settingsStruct.beginGroup('Languages')
         for k in self.__settingsStruct.allKeys():
             v = int(self.__settingsStruct.value(k, 1))
+            print(v)
             self.__langs_test_available_dict[k] = v
         self.__settingsStruct.endGroup()
 
@@ -243,5 +244,7 @@ class SettingsDialog(QDialog):
         super().accept()
         self.__setLangsDict()
         dict = self.getLangsDict()
+        self.__settingsStruct.beginGroup('Languages')
         for k, v in dict.items():
             self.__settingsStruct.setValue(k, v)
+        self.__settingsStruct.endGroup()
