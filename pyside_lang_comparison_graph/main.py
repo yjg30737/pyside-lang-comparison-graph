@@ -209,6 +209,8 @@ class MainWindow(QMainWindow):
         self.__chartView.setRenderHints(QPainter.Antialiasing)
         self.__chartView.setChart(self.__chart)
 
+        self.__initResultInfoWidgetOnChart()
+
         self.__logLbl = QLabel()
         self.__logLbl.setText('Running the test...')
         self.__logBrowser = QTextBrowser()
@@ -287,6 +289,17 @@ class MainWindow(QMainWindow):
         mainWidget.setLayout(lay)
 
         self.setCentralWidget(mainWidget)
+
+    def __initResultInfoWidgetOnChart(self):
+        self.__totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
+        lay = QVBoxLayout()
+        lay.addWidget(self.__totalLbl)
+        resultInfoWidget = QWidget()
+        resultInfoWidget.setLayout(lay)
+        resultInfoWidget.setStyleSheet('QWidget { background-color: transparent; }')
+        scene = self.__chartView.scene()
+        scene.addWidget(resultInfoWidget)
+        self.__chartView.setScene(scene)
 
     def __settings(self):
         dialog = SettingsDialog()
@@ -381,17 +394,6 @@ class MainWindow(QMainWindow):
                 reduced_n_text = n-(n % pow(10, len(str(n))-2))
                 self.__timesNameLbl.setText(f"about {num2words(reduced_n_text)}")
 
-    def __setResultInfoWidgetOnChart(self):
-        totalLbl = QLabel(f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
-        lay = QVBoxLayout()
-        lay.addWidget(totalLbl)
-        resultInfoWidget = QWidget()
-        resultInfoWidget.setLayout(lay)
-        resultInfoWidget.setStyleSheet('QWidget { background-color: transparent; }')
-        scene = self.__chartView.scene()
-        scene.addWidget(resultInfoWidget)
-        self.__chartView.setScene(scene)
-
     def __setChart(self):
         try:
             self.__tableWidget.clearContents()
@@ -424,7 +426,9 @@ class MainWindow(QMainWindow):
             self.__axisX.setTitleText('Language')
             self.__axisY.setTitleText('Seconds')
 
-            self.__setResultInfoWidgetOnChart()
+            self.__totalLbl.setText(
+                f'Count of Calculation: {self.__timesLineEdit.text()} ({self.__timesNameLbl.text()})')
+
 
         except Exception as e:
             print(e)
